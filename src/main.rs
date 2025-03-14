@@ -1,8 +1,5 @@
-use termio::cli::constant::ProtocolType;
-use termio::emulator::core::terminal_emulator::TerminalEmulator;
-use tmui::{
-    application::Application, application_window::ApplicationWindow, prelude::*, widget::ChildOp,
-};
+use termio::{cli::constant::ProtocolType, emulator::core::terminal_emulator::TerminalEmulator};
+use tmui::{application::Application, application_window::ApplicationWindow, prelude::*};
 
 fn main() {
     log4rs::init_file("src/log4rs.yaml", Default::default()).unwrap();
