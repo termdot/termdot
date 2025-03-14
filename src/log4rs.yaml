@@ -6,12 +6,12 @@ appenders:
   stdout:
     kind: console
     encoder:
-      pattern: "{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}"
+      pattern: '{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}'
   file:
     kind: file
-    path: "terminal-dev.log"
+    path: 'termdot-dev.log'
     encoder:
-      pattern: "{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}"
+      pattern: '{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}'
 # Global log settings
 root:
   level: info
