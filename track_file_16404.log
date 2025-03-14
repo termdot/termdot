@@ -1,0 +1,238 @@
+Application total runtime: 8.307s.
+
+[ThreadId(3)]
+invalidate_visual:
+median time spend         = 0.33ms
+average time spend        = 0.372ms
+maximum time spend        = 0.908ms
+minimum time spend        = 0.121ms
+percentile 95% time spend = 0.721ms
+percentile 99% time spend = 0.908ms
+total track count: 50, total time spend 0.019s, execution proportion: 0.224%.
+
+layout_change_ApplicationWindow#1:
+median time spend         = 0.172ms
+average time spend        = 0.172ms
+maximum time spend        = 0.172ms
+minimum time spend        = 0.172ms
+percentile 95% time spend = 0.172ms
+percentile 99% time spend = 0.172ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.002%.
+
+layout_change_TerminalEmulator#3:
+median time spend         = 0.256ms
+average time spend        = 0.256ms
+maximum time spend        = 0.256ms
+minimum time spend        = 0.256ms
+percentile 95% time spend = 0.256ms
+percentile 99% time spend = 0.256ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.003%.
+
+layout_change_TerminalPanel#2:
+median time spend         = 0.046ms
+average time spend        = 0.046ms
+maximum time spend        = 0.046ms
+minimum time spend        = 0.046ms
+percentile 95% time spend = 0.046ms
+percentile 99% time spend = 0.046ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.001%.
+
+single_render_ApplicationWindow#1:
+median time spend         = 0.155ms
+average time spend        = 0.155ms
+maximum time spend        = 0.155ms
+minimum time spend        = 0.155ms
+percentile 95% time spend = 0.155ms
+percentile 99% time spend = 0.155ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.002%.
+
+single_render_ApplicationWindow#1_paint:
+median time spend         = 0ms
+average time spend        = 0.000ms
+maximum time spend        = 0ms
+minimum time spend        = 0ms
+percentile 95% time spend = 0ms
+percentile 99% time spend = 0ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_ApplicationWindow#1_styles:
+median time spend         = 0.059ms
+average time spend        = 0.059ms
+maximum time spend        = 0.059ms
+minimum time spend        = 0.059ms
+percentile 95% time spend = 0.059ms
+percentile 99% time spend = 0.059ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.001%.
+
+single_render_ScrollArea#19:
+median time spend         = 0.039ms
+average time spend        = 0.039ms
+maximum time spend        = 0.039ms
+minimum time spend        = 0.039ms
+percentile 95% time spend = 0.039ms
+percentile 99% time spend = 0.039ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_ScrollArea#19_paint:
+median time spend         = 0ms
+average time spend        = 0.000ms
+maximum time spend        = 0ms
+minimum time spend        = 0ms
+percentile 95% time spend = 0ms
+percentile 99% time spend = 0ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_ScrollArea#19_styles:
+median time spend         = 0.005ms
+average time spend        = 0.005ms
+maximum time spend        = 0.005ms
+minimum time spend        = 0.005ms
+percentile 95% time spend = 0.005ms
+percentile 99% time spend = 0.005ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_ScrollBar#21:
+median time spend         = 0.0835ms
+average time spend        = 0.074ms
+maximum time spend        = 0.134ms
+minimum time spend        = 0.029ms
+percentile 95% time spend = 0.102ms
+percentile 99% time spend = 0.134ms
+total track count: 12, total time spend 0.001s, execution proportion: 0.011%.
+
+single_render_ScrollBar#21_paint:
+median time spend         = 0.0155ms
+average time spend        = 0.013ms
+maximum time spend        = 0.02ms
+minimum time spend        = 0.006ms
+percentile 95% time spend = 0.018ms
+percentile 99% time spend = 0.02ms
+total track count: 12, total time spend 0.000s, execution proportion: 0.002%.
+
+single_render_ScrollBar#21_styles:
+median time spend         = 0.008ms
+average time spend        = 0.008ms
+maximum time spend        = 0.008ms
+minimum time spend        = 0.008ms
+percentile 95% time spend = 0.008ms
+percentile 99% time spend = 0.008ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalEmulator#3:
+median time spend         = 0.031ms
+average time spend        = 0.031ms
+maximum time spend        = 0.031ms
+minimum time spend        = 0.031ms
+percentile 95% time spend = 0.031ms
+percentile 99% time spend = 0.031ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalEmulator#3_paint:
+median time spend         = 0ms
+average time spend        = 0.000ms
+maximum time spend        = 0ms
+minimum time spend        = 0ms
+percentile 95% time spend = 0ms
+percentile 99% time spend = 0ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalEmulator#3_styles:
+median time spend         = 0.004ms
+average time spend        = 0.004ms
+maximum time spend        = 0.004ms
+minimum time spend        = 0.004ms
+percentile 95% time spend = 0.004ms
+percentile 99% time spend = 0.004ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalPanel#2:
+median time spend         = 0.024ms
+average time spend        = 0.024ms
+maximum time spend        = 0.024ms
+minimum time spend        = 0.024ms
+percentile 95% time spend = 0.024ms
+percentile 99% time spend = 0.024ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalPanel#2_paint:
+median time spend         = 0.003ms
+average time spend        = 0.003ms
+maximum time spend        = 0.003ms
+minimum time spend        = 0.003ms
+percentile 95% time spend = 0.003ms
+percentile 99% time spend = 0.003ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalPanel#2_styles:
+median time spend         = 0.002ms
+average time spend        = 0.002ms
+maximum time spend        = 0.002ms
+minimum time spend        = 0.002ms
+percentile 95% time spend = 0.002ms
+percentile 99% time spend = 0.002ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+single_render_TerminalView#18:
+median time spend         = 0.317ms
+average time spend        = 0.342ms
+maximum time spend        = 0.652ms
+minimum time spend        = 0.216ms
+percentile 95% time spend = 0.549ms
+percentile 99% time spend = 0.652ms
+total track count: 44, total time spend 0.015s, execution proportion: 0.181%.
+
+single_render_TerminalView#18_paint:
+median time spend         = 0.2435ms
+average time spend        = 0.271ms
+maximum time spend        = 0.552ms
+minimum time spend        = 0.152ms
+percentile 95% time spend = 0.475ms
+percentile 99% time spend = 0.552ms
+total track count: 44, total time spend 0.012s, execution proportion: 0.144%.
+
+single_render_TerminalView#18_styles:
+median time spend         = 0.007ms
+average time spend        = 0.007ms
+maximum time spend        = 0.007ms
+minimum time spend        = 0.007ms
+percentile 95% time spend = 0.007ms
+percentile 99% time spend = 0.007ms
+total track count: 1, total time spend 0.000s, execution proportion: 0.000%.
+
+terminal_view_extend_selection:
+median time spend         = 0.003ms
+average time spend        = 0.005ms
+maximum time spend        = 0.024ms
+minimum time spend        = 0ms
+percentile 95% time spend = 0.013ms
+percentile 99% time spend = 0.02ms
+total track count: 204, total time spend 0.001s, execution proportion: 0.011%.
+
+terminal_view_mouse_move:
+median time spend         = 0.004ms
+average time spend        = 0.005ms
+maximum time spend        = 0.032ms
+minimum time spend        = 0ms
+percentile 95% time spend = 0.012ms
+percentile 99% time spend = 0.019ms
+total track count: 801, total time spend 0.004s, execution proportion: 0.045%.
+
+window_initialize:
+median time spend         = 33.962ms
+average time spend        = 33.962ms
+maximum time spend        = 33.962ms
+minimum time spend        = 33.962ms
+percentile 95% time spend = 33.962ms
+percentile 99% time spend = 33.962ms
+total track count: 1, total time spend 0.034s, execution proportion: 0.409%.
+
+[ThreadId(1)]
+physical_window_redraw:
+median time spend         = 0.102ms
+average time spend        = 0.108ms
+maximum time spend        = 0.21ms
+minimum time spend        = 0.069ms
+percentile 95% time spend = 0.169ms
+percentile 99% time spend = 0.21ms
+total track count: 51, total time spend 0.006s, execution proportion: 0.066%.
+

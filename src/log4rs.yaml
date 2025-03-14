@@ -1,0 +1,19 @@
+# log4rs.yaml
+# Check config file change timeout
+refresh_rate: 30 seconds
+# appender
+appenders:
+  stdout:
+    kind: console
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}"
+  file:
+    kind: file
+    path: "terminal-dev.log"
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S %Z)} {l} [{M}, {T}-{I}] - {m}{n}"
+# Global log settings
+root:
+  level: info
+  appenders:
+    - stdout

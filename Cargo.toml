@@ -1,6 +1,14 @@
+[workspace]
+members = ["pty"]
+
 [package]
 name = "termdot"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tmui = { git = "https://github.com/toocol/tmui" }
+termio = { git = "https://github.com/toocol/termio" }
+
+log = "0.4"
+log4rs = "1.1.1"
