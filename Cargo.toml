@@ -1,14 +1,21 @@
 [workspace]
-members = ["pty"]
+members = ["builtin", "ipc", "pty"]
 
 [package]
 name = "termdot"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "termdot"
+path = "src/main.rs"
+
 [dependencies]
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
 tmui = { git = "https://github.com/toocol/tmui" }
 termio = { git = "https://github.com/toocol/termio" }
+
+pty = { path = "pty/" }
 
 log = "0.4"
 log4rs = "1.1.1"
