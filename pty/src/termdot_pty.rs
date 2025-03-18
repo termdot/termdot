@@ -27,13 +27,7 @@ impl ObjectSubclass for TermdotPty {
 impl ObjectImpl for TermdotPty {}
 
 impl Pty for TermdotPty {
-    fn start(
-        &mut self,
-        _id: SessionPropsId,
-        _program: &str,
-        _arguments: Vec<&str>,
-        _enviroment: Vec<&str>,
-    ) -> bool {
+    fn start(&mut self, _: SessionPropsId, _: &str, _: Vec<&str>, _: Vec<&str>) -> bool {
         self.running = true;
 
         self.ipc_context = IpcContext::slave();
@@ -59,6 +53,7 @@ impl Pty for TermdotPty {
 
     fn set_window_size(&mut self, cols: i32, rows: i32) {
         self.window_size = Size::new(cols, rows);
+        self.send_ipc_data(IpcEvent::SetTerminalSize(cols, rows));
     }
 
     fn window_size(&self) -> Size {
@@ -88,11 +83,7 @@ impl Pty for TermdotPty {
 
         let packed_data = IpcEvent::pack_data(data);
         for chunk in packed_data {
-            if let Some(ctx) = self.ipc_context.as_ref() {
-                if let Err(e) = ctx.try_send(chunk) {
-                    error!("IPC send data failed, err = {:?}", e)
-                }
-            }
+            self.send_ipc_data(chunk);
         }
     }
 
@@ -115,6 +106,17 @@ impl Pty for TermdotPty {
         }
 
         vec![]
+    }
+}
+
+impl TermdotPty {
+    #[inline]
+    pub fn send_ipc_data(&self, evt: IpcEvent) {
+        if let Some(ctx) = self.ipc_context.as_ref() {
+            if let Err(e) = ctx.try_send(evt) {
+                error!("IPC send data failed, err = {:?}", e)
+            }
+        }
     }
 }
 

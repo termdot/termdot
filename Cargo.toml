@@ -1,5 +1,5 @@
 [workspace]
-members = ["builtin", "ipc", "pty"]
+members = ["shell", "ipc", "pty"]
 
 [package]
 name = "termdot"
@@ -19,3 +19,4 @@ pty = { path = "pty/" }
 
 log = "0.4"
 log4rs = "1.1.1"
+lazy_static = "1.5.0"

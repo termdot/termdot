@@ -1,11 +1,13 @@
 use crate::IPC_DATA_SIZE;
 
+#[repr(align(64))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(clippy::large_enum_variant)]
 pub enum IpcEvent {
     Exit,
-    SendData([u8; IPC_DATA_SIZE], usize),
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
+    SendData([u8; IPC_DATA_SIZE], usize),
 }
 
 impl IpcEvent {

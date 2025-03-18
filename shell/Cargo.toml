@@ -1,5 +1,5 @@
 [package]
-name = "builtin"
+name = "shell"
 version = "0.1.0"
 edition = "2024"
 
@@ -8,7 +8,13 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
+termio = { git = "https://github.com/toocol/termio" }
+tmui = { git = "https://github.com/toocol/tmui" }
 
 ipc = { path = "../ipc" }
 
 ahash = "0.8.11"
+wchar = "0.11.0"
+widestring = "1.0.2"
+derivative = "2.2.0"
+lazy_static = "1.5.0"
