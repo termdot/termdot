@@ -24,14 +24,14 @@ pub const ASCII_CARRIAGE_RETURN: u16 = 0x000D;
 pub const ASCII_ESCAPE: u16 = 0x001B; 
 
 // Common keyboard control character code points:
-/// ↑
-pub const KEY_UP: u16 = 0x2191;
-/// ↓
-pub const KEY_DOWN: u16 = 0x2193; 
-/// ←
-pub const KEY_LEFT: u16 = 0x2190; 
-/// →
-pub const KEY_RIGHT: u16 = 0x2192; 
+/// ↑ `A` at the end of escape sequence \x1B[A
+pub const KEY_UP: u16 = 0x0041;
+/// ↓ `B` at the end of escape sequence \x1B[B
+pub const KEY_DOWN: u16 = 0x0042; 
+/// → `C` at the end of escape sequence \x1B[C
+pub const KEY_RIGHT: u16 = 0x0043; 
+/// ← `D` at the end of escape sequence \x1B[D
+pub const KEY_LEFT: u16 = 0x0044; 
 /// `H` at the end of escape sequence \X1B[H
 pub const KEY_HOME: u16 = 0x0048;
 /// `F` at the end of escape sequence \X1B[F
@@ -47,7 +47,7 @@ pub fn is_printable(ch: u16) -> bool {
         0x00A0..=0x00FF | // Latin-1 Supplement
         0x2000..=0x206F | // Punctuation
         0x3000..=0x30FF | // CJK symbols and Japanese kana
-        0x4E00..=0x9FFF    // Common CJK ideographs
+        0x4E00..=0x9FFF   // Common CJK ideographs
         => true,
         
         _ => false,

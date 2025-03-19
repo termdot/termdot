@@ -1,4 +1,4 @@
-use godot::prelude::*;
+use godot::{classes::notify::NodeNotification, prelude::*};
 use ipc::{IPC_DATA_SIZE, ipc_context::IpcContext, ipc_event::IpcEvent};
 use widestring::WideString;
 
@@ -41,6 +41,9 @@ impl INode for Termdot {
         }
 
         self.shell.set_prompt(&self.host_name);
+
+        let callable = self.base().callable("_temdot_exit");
+        self.base_mut().connect("tree_exiting", &callable);
     }
 
     fn process(&mut self, _delta: f64) {
@@ -50,6 +53,7 @@ impl INode for Termdot {
 
         while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
             match evt {
+                IpcEvent::Ready => self.shell.prompt(),
                 IpcEvent::Exit => {}
                 IpcEvent::SetTerminalSize(cols, rows) => {
                     self.shell.set_terminal_size(cols, rows);
@@ -58,12 +62,42 @@ impl INode for Termdot {
             }
         }
 
-        let ipc_context = self.ipc_context.as_mut().unwrap();
+        let ipc_context = self.ipc_context.as_ref().unwrap();
         while let Some(echo) = self.shell.next_echo() {
             if let Err(e) = ipc_context.try_send(echo) {
                 godot_error!("[Termdot::process] Send echo failed, e = {:?}", e);
             }
         }
+    }
+
+    fn exit_tree(&mut self) {
+        self._termdot_exit();
+    }
+
+    #[allow(clippy::single_match)]
+    fn on_notification(&mut self, what: NodeNotification) {
+        match what {
+            NodeNotification::EXIT_TREE
+            | NodeNotification::UNPARENTED
+            | NodeNotification::WM_CLOSE_REQUEST
+            | NodeNotification::CRASH => {
+                self._termdot_exit();
+            }
+            _ => {}
+        }
+    }
+}
+
+#[godot_api]
+impl Termdot {
+    #[func]
+    fn _termdot_exit(&mut self) {
+        godot_print!("Termdot exit.");
+
+        if let Some(ctx) = self.ipc_context.as_ref() {
+            let _ = ctx.try_send(IpcEvent::Exit);
+        }
+        self.ipc_context = None;
     }
 }
 

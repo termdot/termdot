@@ -32,6 +32,12 @@ impl Pty for TermdotPty {
 
         self.ipc_context = IpcContext::slave();
 
+        self.send_ipc_data(IpcEvent::SetTerminalSize(
+            self.window_size.width(),
+            self.window_size.height(),
+        ));
+        self.send_ipc_data(IpcEvent::Ready);
+
         self.running
     }
 
@@ -81,7 +87,7 @@ impl Pty for TermdotPty {
             return;
         }
 
-        let packed_data = IpcEvent::pack_data(data);
+        let packed_data = IpcEvent::pack_data(&data);
         for chunk in packed_data {
             self.send_ipc_data(chunk);
         }
@@ -95,7 +101,11 @@ impl Pty for TermdotPty {
 
         if let Some(evt) = ctx.try_recv() {
             match evt {
-                IpcEvent::Exit => {}
+                IpcEvent::Ready => {}
+                IpcEvent::Exit => {
+                    self.running = false;
+                    self.ipc_context = None;
+                }
                 IpcEvent::SetTerminalSize(_, _) => {}
                 IpcEvent::SendData(data, len) => {
                     let mut data = data.to_vec();

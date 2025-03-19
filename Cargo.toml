@@ -1,5 +1,5 @@
 [workspace]
-members = ["shell", "ipc", "pty"]
+members = ["shell", "ipc", "pty", "benchmark"]
 
 [package]
 name = "termdot"
@@ -10,13 +10,25 @@ edition = "2021"
 name = "termdot"
 path = "src/main.rs"
 
-[dependencies]
+[workspace.dependencies]
 godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
 tmui = { git = "https://github.com/toocol/tmui" }
 termio = { git = "https://github.com/toocol/termio" }
 
 pty = { path = "pty/" }
+ipc = { path = "ipc/" }
 
 log = "0.4"
 log4rs = "1.1.1"
 lazy_static = "1.5.0"
+ahash = "0.8.11"
+wchar = "0.11.0"
+widestring = "1.0.2"
+derivative = "2.2.0"
+rand = "0.9.0"
+
+[dependencies]
+tmui = { workspace = true }
+termio = { workspace = true }
+log4rs = { workspace = true }
+pty = { workspace = true }

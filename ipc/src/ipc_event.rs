@@ -4,6 +4,7 @@ use crate::IPC_DATA_SIZE;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::large_enum_variant)]
 pub enum IpcEvent {
+    Ready,
     Exit,
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
@@ -11,10 +12,10 @@ pub enum IpcEvent {
 }
 
 impl IpcEvent {
-    /// Pack data to [`IpcEvent::SendData`]
-    pub fn pack_data(data: String) -> Vec<IpcEvent> {
+    /// Pack string to [`IpcEvent::SendData`]
+    pub fn pack_data(data: &str) -> Vec<IpcEvent> {
         let bytes = data.as_bytes();
-        let mut events = Vec::new();
+        let mut events = vec![];
         let mut start = 0;
 
         while start < bytes.len() {
@@ -42,7 +43,7 @@ pub mod tests {
 
     #[test]
     fn test_pack_data() {
-        let evt = IpcEvent::pack_data("Hello World".to_string());
+        let evt = IpcEvent::pack_data("Hello World");
         assert_eq!(evt.len(), 1);
 
         if let IpcEvent::SendData(data, len) = evt.first().unwrap() {

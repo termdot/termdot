@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tmui = { git = "https://github.com/toocol/tmui" }
-godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
+tmui = { workspace = true }
+godot = { workspace = true }
 
-log = "0.4"
+log = { workspace = true }

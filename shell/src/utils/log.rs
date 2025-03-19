@@ -27,11 +27,15 @@ impl LocalLog {
         let _join_handle = std::thread::Builder::new()
             .name("local-log".to_string())
             .spawn(move || {
-                let mut file = OpenOptions::new()
+                let mut file = match OpenOptions::new()
                     .append(true)
                     .create(true)
                     .open(path)
-                    .unwrap_or_else(|e| panic!("Crate `LocalLog` failed, e = {:?}", e));
+                    .inspect_err(|e| godot_error!("Crate `LocalLog` failed, e = {:?}", e))
+                {
+                    Ok(f) => f,
+                    Err(_) => return,
+                };
 
                 loop {
                     if let Ok(mut log) = receiver.recv() {

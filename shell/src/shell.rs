@@ -9,17 +9,21 @@ use godot::{
 use ipc::ipc_event::IpcEvent;
 use std::{collections::VecDeque, str::FromStr};
 use termio::emulator::emulation::{Emulation, VT102Emulation};
-use wchar::wchar_t;
+use wchar::{wch, wchar_t};
+use widestring::WideString;
 
 #[derive(Derivative)]
 #[derivative(Default)]
 pub struct Shell {
     prompt: String,
-    command: Vec<wchar_t>,
+    buffer: Vec<wchar_t>,
     cursor: usize,
     is_executing: bool,
     u_stack: Vec<Vec<wchar_t>>,
     d_stack: Vec<Vec<wchar_t>>,
+    /// (Cols, Rows)
+    cursor_origin: Vector2i,
+    columns: i32,
     argv: [wchar_t; 2],
 
     command_map: AHashMap<String, Gd<Command>>,
@@ -30,30 +34,46 @@ pub struct Shell {
 
 impl Shell {
     #[inline]
-    pub fn set_terminal_size(&mut self, cols: i32, rows: i32) {
-        self.emulation
-            .emulation_mut()
-            .current_screen_mut()
-            .resize_image(rows, cols);
-    }
-
-    #[inline]
     pub fn insert_command(&mut self, name: String, command: Gd<Command>) {
         self.command_map.insert(name, command);
     }
 
-    /// Get current cursor position, represent as (row, column)
+    #[inline]
+    pub fn set_terminal_size(&mut self, cols: i32, rows: i32) {
+        self.emulation.emulation_mut().set_image_size(rows, cols);
+    }
+
+    /// Get current terminal size, represent as (cols, rows)
+    #[inline]
+    pub fn get_terminal_size(&self) -> Vector2i {
+        let screen = self.emulation.emulation().current_screen();
+        Vector2i::new(screen.get_columns(), screen.get_lines())
+    }
+
+    /// Get current cursor position, represent as (cols, rows)
     ///
     /// The origin point of cursor is (1, 1)
     #[inline]
     pub fn get_cursor_position(&self) -> Vector2i {
         let screen = self.emulation.emulation().current_screen();
-        Vector2i::new(screen.get_cursor_y() + 1, screen.get_cursor_x() + 1)
+        Vector2i::new(screen.get_cursor_x() + 1, screen.get_cursor_y() + 1)
     }
 
     #[inline]
     pub fn set_prompt(&mut self, host_name: &GString) {
-        self.prompt = format!("\r\n{}> \u{200B}", host_name);
+        self.prompt = format!("{}> \u{200B}", host_name);
+    }
+
+    #[inline]
+    pub fn prompt(&mut self) {
+        let prompt = &self.prompt;
+        let wstr = WideString::from_str(&prompt);
+        for &c in wstr.as_slice() {
+            self.emulation.receive_char(c);
+        }
+        self.echos.extend(IpcEvent::pack_data(prompt));
+        self.cursor_origin = self.get_cursor_position();
+        self.columns = self.get_terminal_size().x;
     }
 
     #[inline]
@@ -62,55 +82,160 @@ impl Shell {
     }
 
     pub fn receive_char(&mut self, c: wchar_t) {
-        self.emulation.receive_char(c);
-
-        match c {
+        let oc = match c {
             ASCII_ESCAPE => {
-                self.reset();
+                self.reset_argv();
                 self.argv[0] = ASCII_ESCAPE;
+                Some(c)
             }
             ASCII_LEFT_SQUARE_BRACKET => {
-                if self.argv[0] != 0 {
+                if self.argv[0] == ASCII_ESCAPE {
                     self.argv[1] = ASCII_LEFT_SQUARE_BRACKET;
                 } else {
                     self.extend(c);
                 }
+                Some(c)
             }
             KEY_HOME => {
-                if self.argv[1] != 0 {
-                    self.reset();
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    self.cursor = 0;
+                    self.emulation.receive_char(wch!(';'));
+                    self.map_set_cursor();
+                    None
                 } else {
                     self.extend(c);
+                    Some(c)
                 }
             }
             KEY_END => {
-                if self.argv[1] != 0 {
-                    self.reset();
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    self.cursor = self.buffer.len();
+                    self.emulation.receive_char(wch!(';'));
+                    self.map_set_cursor();
+                    None
                 } else {
                     self.extend(c);
+                    Some(c)
                 }
             }
-            KEY_LEFT => {}
-            KEY_RIGHT => {}
-            KEY_UP => {}
-            KEY_DOWN => {}
-            ASCII_CARRIAGE_RETURN => {}
-            ASCII_BACKSPACE => {}
-            ASCII_TAB => {}
+            KEY_LEFT => {
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    if self.cursor != 0 {
+                        self.cursor -= 1;
+                        Some(c)
+                    } else {
+                        self.emulation.receive_char(wch!(';'));
+                        self.map_set_cursor();
+                        None
+                    }
+                } else {
+                    self.extend(c);
+                    Some(c)
+                }
+            }
+            KEY_RIGHT => {
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    if self.cursor < self.buffer.len() {
+                        self.cursor += 1;
+                        Some(c)
+                    } else {
+                        self.emulation.receive_char(wch!(';'));
+                        self.map_set_cursor();
+                        None
+                    }
+                } else {
+                    self.extend(c);
+                    Some(c)
+                }
+            }
+            KEY_UP => {
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    if let Some(u_pop) = self.u_stack.pop() {
+                        if !self.buffer.is_empty() {
+                            self.d_stack.push(self.buffer.clone());
+                        }
+                        self.buffer = u_pop;
+                        self.cursor = self.buffer.len();
+
+                        for &c in self.replay_text().as_slice() {
+                            self.emulation.receive_char(c);
+                        }
+                    }
+                    self.emulation.receive_char(wch!(';'));
+                    self.map_set_cursor();
+                    None
+                } else {
+                    self.extend(c);
+                    Some(c)
+                }
+            }
+            KEY_DOWN => {
+                if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                    if let Some(d_pop) = self.d_stack.pop() {
+                        if !self.buffer.is_empty() {
+                            self.u_stack.push(self.buffer.clone());
+                        }
+                        self.buffer = d_pop;
+                        self.cursor = self.buffer.len();
+
+                        for &c in self.replay_text().as_slice() {
+                            self.emulation.receive_char(c);
+                        }
+                    }
+                    self.emulation.receive_char(wch!(';'));
+                    self.map_set_cursor();
+                    None
+                } else {
+                    self.extend(c);
+                    Some(c)
+                }
+            }
+            ASCII_BACKSPACE => {
+                if self.cursor != 0 {
+                    self.cursor -= 1;
+                    self.buffer.remove(self.cursor);
+                    Some(c)
+                } else {
+                    None
+                }
+            }
+            ASCII_TAB => None,
+            ASCII_CARRIAGE_RETURN => {
+                let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+                self.u_stack.push(self.buffer.clone());
+                self.buffer.clear();
+                self.cursor = 0;
+
+                self.excute_command(&data);
+
+                None
+            }
             _ => {
                 if is_printable(c) {
                     self.extend(c);
                 }
+                Some(c)
             }
+        };
+
+        if let Some(c) = oc {
+            self.emulation.receive_char(c);
+        }
+
+        if c != ASCII_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
+            self.reset_argv();
         }
     }
 }
 
 /// Private functions:
 impl Shell {
-    fn extend(&mut self, c: wchar_t) {}
+    fn extend(&mut self, c: wchar_t) {
+        self.buffer.insert(self.cursor, c);
+        self.cursor += 1;
+    }
 
-    fn excute_command(&mut self, data: String) {
+    fn excute_command(&mut self, data: &str) {
         let commands = data.trim().split(" ");
         let (mut command, mut params) = (None, array![]);
         for (i, c) in commands.into_iter().enumerate() {
@@ -126,20 +251,62 @@ impl Shell {
             None => return,
         };
         if let Some(gd) = self.command_map.get(command) {
+            self.is_executing = true;
             Command::start(gd.clone(), params);
         } else {
-            let send_back = format!(
-                "`{}` is not recognized as an internal command.{}",
-                command, self.prompt,
-            );
+            self.is_executing = false;
+            let send_back = if data.is_empty() {
+                format!("\r\n{}", self.prompt)
+            } else {
+                format!(
+                    "\r\n`{}` is not recognized as an internal or external command.\r\n{}",
+                    command, self.prompt,
+                )
+            };
 
-            self.echos.extend(IpcEvent::pack_data(send_back));
+            let wstr = WideString::from_str(&send_back);
+            for &c in wstr.as_slice() {
+                self.emulation.receive_char(c);
+            }
+
+            self.cursor_origin = self.get_cursor_position();
+            self.columns = self.get_terminal_size().x;
+
+            self.echos.extend(IpcEvent::pack_data(&send_back));
         }
     }
 
     #[inline]
-    fn reset(&mut self) {
+    fn reset_argv(&mut self) {
         self.argv[0] = 0;
         self.argv[1] = 0;
+    }
+
+    fn replay_text(&self) -> WideString {
+        let cursor_origin = self.cursor_origin;
+        let text = format!("\x1B[{};{}H\x1B[K", cursor_origin.y, cursor_origin.x,);
+        let mut text = WideString::from_str(&text);
+
+        let mut cur_text = WideString::from_vec(self.buffer.to_vec()).to_string_lossy();
+        let cursor_pos = self.cursor_to_position();
+        cur_text.push_str(&format!("\x1B[{};{}H", cursor_pos.0, cursor_pos.1));
+
+        text.push_str(&cur_text);
+
+        text
+    }
+
+    #[inline]
+    fn cursor_to_position(&self) -> (i32, i32) {
+        let row = (self.cursor as i32 + self.cursor_origin.x) / (self.columns + 1);
+        let col = (self.cursor as i32 + self.cursor_origin.x) % (self.columns + 1);
+        (self.cursor_origin.y + row, col)
+    }
+
+    fn map_set_cursor(&mut self) {
+        let (row, col) = self.cursor_to_position();
+        let screen = self.emulation.emulation_mut().current_screen_mut();
+        screen.set_cursor_y(row);
+        screen.set_cursor_x(col);
     }
 }

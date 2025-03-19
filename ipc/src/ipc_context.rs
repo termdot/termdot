@@ -1,9 +1,18 @@
-use crate::{IPC_DATA_SIZE, MEM_QUEUE_NAME, ipc_event::IpcEvent};
-use godot::global::godot_error;
+use std::time::Duration;
+
+use crate::{IPC_DATA_SIZE, MEM_QUEUE_MASTER, MEM_QUEUE_SLAVE, MEM_SIGNAL, ipc_event::IpcEvent};
+use godot::global::{godot_error, godot_print};
 use log::error;
-use tmui::tipc::mem::{
-    BuildType,
-    mem_queue::{MemQueue, MemQueueBuilder, MemQueueError},
+use tmui::tipc::{
+    mem::{
+        BuildType,
+        mem_queue::{MemQueue, MemQueueBuilder, MemQueueError},
+    },
+    raw_sync::{
+        Timeout,
+        events::{Event, EventInit, EventState},
+    },
+    shared_memory::{Shmem, ShmemConf},
 };
 
 #[repr(u8)]
@@ -15,55 +24,102 @@ pub enum ContextRole {
 
 pub struct IpcContext {
     role: ContextRole,
-    mem_queue: MemQueue<IPC_DATA_SIZE, IpcEvent>,
+    master_queue: MemQueue<IPC_DATA_SIZE, IpcEvent>,
+    slave_queue: MemQueue<IPC_DATA_SIZE, IpcEvent>,
+    signal: Shmem,
 }
 
 impl IpcContext {
-    #[inline]
     pub fn master() -> Option<Self> {
         Some(Self {
             role: ContextRole::Master,
-            mem_queue: MemQueueBuilder::new()
+            master_queue: MemQueueBuilder::new()
                 .build_type(BuildType::Create)
-                .os_id(MEM_QUEUE_NAME)
+                .os_id(MEM_QUEUE_MASTER)
                 .build()
                 .inspect_err(|e| {
-                    godot_error!("[IpcContext::master] `MemQueue` create error, create `IpcContext` failed, e = {:?}", e)
+                    godot_error!("[IpcContext::master] Master `MemQueue` create error, create `IpcContext` failed, e = {:?}", e)
                 })
                 .ok()?,
+            slave_queue: MemQueueBuilder::new()
+                .build_type(BuildType::Create)
+                .os_id(MEM_QUEUE_SLAVE)
+                .build()
+                .inspect_err(|e| {
+                    godot_error!("[IpcContext::master] Slave `MemQueue` create error, create `IpcContext` failed, e = {:?}", e)
+                })
+                .ok()?,
+            signal: ShmemConf::new().os_id(MEM_SIGNAL).size(size_of::<Event>()).create().inspect_err(|e| {
+                godot_error!("[IpcContext::master] Wait signal create error, create `IpcContext` failed, e = {:?}", e)
+            }).ok()?,
         })
     }
 
-    #[inline]
     pub fn slave() -> Option<Self> {
         Some(Self {
             role: ContextRole::Slave,
-            mem_queue: MemQueueBuilder::new()
+            master_queue: MemQueueBuilder::new()
                 .build_type(BuildType::Open)
-                .os_id(MEM_QUEUE_NAME)
+                .os_id(MEM_QUEUE_MASTER)
                 .build()
-                .inspect_err(|e| error!("[IpcContext::slave] MemQueue open error, create `IpcContext` failed, e = {:?}", e))
+                .inspect_err(|e| error!("[IpcContext::slave] Master `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                 .ok()?,
+            slave_queue: MemQueueBuilder::new()
+                .build_type(BuildType::Open)
+                .os_id(MEM_QUEUE_SLAVE)
+                .build()
+                .inspect_err(|e| error!("[IpcContext::slave] Slave `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                .ok()?,
+            signal: ShmemConf::new().os_id(MEM_SIGNAL).open().inspect_err(|e| {
+                godot_error!("[IpcContext::slave] Wait signal open error, create `IpcContext` failed, e = {:?}", e)
+            }).ok()?,
         })
-    }
-
-    #[inline]
-    pub fn get_role(&self) -> ContextRole {
-        self.role
     }
 
     #[inline]
     pub fn try_send(&self, evt: IpcEvent) -> Result<(), MemQueueError> {
-        self.mem_queue.try_write(evt)
-    }
-
-    #[inline]
-    pub fn has_event(&self) -> bool {
-        self.mem_queue.has_event()
+        match self.role {
+            ContextRole::Master => self.master_queue.try_write(evt),
+            ContextRole::Slave => self.slave_queue.try_write(evt),
+        }
     }
 
     #[inline]
     pub fn try_recv(&self) -> Option<IpcEvent> {
-        self.mem_queue.try_read()
+        match self.role {
+            ContextRole::Master => self.slave_queue.try_read(),
+            ContextRole::Slave => self.master_queue.try_read(),
+        }
+    }
+
+    #[inline]
+    fn wait_signaled(&self, timeout: Timeout) {
+        if let Ok((evt, _)) = unsafe { Event::new(self.signal.as_ptr(), true) } {
+            if let Err(e) = evt.wait(timeout) {
+                godot_error!("[IpcContext::wait_signaled] Error occurred, {:?}", e)
+            }
+        }
+    }
+
+    #[inline]
+    fn signaled(&self) {
+        if let Ok((evt, _)) = unsafe { Event::from_existing(self.signal.as_ptr()) } {
+            if let Err(e) = evt.set(EventState::Signaled) {
+                error!("[IpcContext::signaled] Error occurred, {:?}", e)
+            }
+        }
+    }
+}
+
+impl Drop for IpcContext {
+    #[inline]
+    fn drop(&mut self) {
+        match self.role {
+            ContextRole::Master => {
+                self.wait_signaled(Timeout::Val(Duration::from_secs(1)));
+                godot_print!("Master IpcContext drop.");
+            }
+            ContextRole::Slave => self.signaled(),
+        }
     }
 }
