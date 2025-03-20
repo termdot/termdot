@@ -9,19 +9,21 @@ pub const UNICODE_BULLET: u16 = 0x2022; // Bullet point
 
 // Common control character code points:
 /// Null character (NUL)
-pub const ASCII_NULL: u16 = 0x0000; 
+pub const CTL_NULL: u16 = 0x0000; 
 /// Bell (BEL)
-pub const ASCII_BELL: u16 = 0x0007; 
+pub const CTL_BELL: u16 = 0x0007; 
 /// Backspace (BS)
-pub const ASCII_BACKSPACE: u16 = 0x0008; 
+pub const CTL_BACKSPACE: u16 = 0x0008; 
 /// Tab (TAB)
-pub const ASCII_TAB: u16 = 0x0009; 
+pub const CTL_TAB: u16 = 0x0009; 
 /// Line feed (LF)
-pub const ASCII_NEWLINE: u16 = 0x000A; 
+pub const CTL_NEWLINE: u16 = 0x000A; 
 /// Carriage return (CR)
-pub const ASCII_CARRIAGE_RETURN: u16 = 0x000D;
+pub const CTL_CARRIAGE_RETURN: u16 = 0x000D;
 /// ESC
-pub const ASCII_ESCAPE: u16 = 0x001B; 
+pub const CTL_ESCAPE: u16 = 0x001B; 
+/// Control+C
+pub const CTL_SIGINT: u16 = 0x0003;
 
 // Common keyboard control character code points:
 /// ↑ `A` at the end of escape sequence \x1B[A

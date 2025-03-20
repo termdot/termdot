@@ -83,13 +83,13 @@ impl Shell {
 
     pub fn receive_char(&mut self, c: wchar_t) {
         let oc = match c {
-            ASCII_ESCAPE => {
+            CTL_ESCAPE => {
                 self.reset_argv();
-                self.argv[0] = ASCII_ESCAPE;
+                self.argv[0] = CTL_ESCAPE;
                 Some(c)
             }
             ASCII_LEFT_SQUARE_BRACKET => {
-                if self.argv[0] == ASCII_ESCAPE {
+                if self.argv[0] == CTL_ESCAPE {
                     self.argv[1] = ASCII_LEFT_SQUARE_BRACKET;
                 } else {
                     self.extend(c);
@@ -190,7 +190,7 @@ impl Shell {
                     Some(c)
                 }
             }
-            ASCII_BACKSPACE => {
+            CTL_BACKSPACE => {
                 if self.cursor != 0 {
                     self.cursor -= 1;
                     self.buffer.remove(self.cursor);
@@ -199,8 +199,9 @@ impl Shell {
                     None
                 }
             }
-            ASCII_TAB => None,
-            ASCII_CARRIAGE_RETURN => {
+            CTL_TAB => None,
+            CTL_SIGINT => None,
+            CTL_CARRIAGE_RETURN => {
                 let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
                 self.u_stack.push(self.buffer.clone());
                 self.buffer.clear();
@@ -222,7 +223,7 @@ impl Shell {
             self.emulation.receive_char(c);
         }
 
-        if c != ASCII_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
+        if c != CTL_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
             self.reset_argv();
         }
     }

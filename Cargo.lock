@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "rust-embed",
 ]
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "lazy_static",
  "libs",
@@ -877,7 +877,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "bitvec",
  "cli",
@@ -1809,7 +1809,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "asset",
  "chrono",
@@ -1923,7 +1923,7 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#ed4ed01250947f88f59378d7f1c66a333de3f826"
+source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2323,7 +2323,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "asset",
  "cli",
@@ -3228,6 +3228,7 @@ version = "0.1.0"
 dependencies = [
  "log4rs",
  "pty 0.1.0",
+ "rust-embed",
  "termio",
  "tmui",
 ]
@@ -3235,7 +3236,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#f2f382d46f33142fbea5816b06d7b28c3e6110fb"
+source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
 dependencies = [
  "cli",
  "emulator",
@@ -3340,7 +3341,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tipc"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#ed4ed01250947f88f59378d7f1c66a333de3f826"
+source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
 dependencies = [
  "lazy_static",
  "log",
@@ -3358,7 +3359,7 @@ dependencies = [
 [[package]]
 name = "tlib"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#ed4ed01250947f88f59378d7f1c66a333de3f826"
+source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
 dependencies = [
  "ahash 0.8.11",
  "bitflags 2.9.0",
@@ -3386,7 +3387,7 @@ dependencies = [
 [[package]]
 name = "tmui"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#ed4ed01250947f88f59378d7f1c66a333de3f826"
+source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
 dependencies = [
  "ahash 0.8.11",
  "beep",

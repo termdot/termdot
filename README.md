@@ -1,3 +1,3 @@
 # termdot
 
-Supports most control characters and escape sequences of XTerm, VT102, and others.
+Supports control characters and escape sequences of XTerm, VT102, and belows.
