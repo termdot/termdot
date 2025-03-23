@@ -29,8 +29,9 @@ impl ObjectImpl for SessionTab {
         self.height_request(25);
         self.set_margin_left(8);
         self.set_valign(Align::End);
+        self.set_border_radius_sep(5., 5., 0., 0.);
         self.set_box_shadow(BoxShadow::new(
-            4.,
+            5.,
             Color::BLACK,
             None,
             Some(ShadowSide::new(&[
@@ -38,6 +39,7 @@ impl ObjectImpl for SessionTab {
                 ShadowSide::TOP,
                 ShadowSide::RIGHT,
             ])),
+            Some(2),
             None,
         ));
         self.set_strict_clip_widget(false);
@@ -55,7 +57,7 @@ impl ObjectImpl for SessionTab {
 
 impl WidgetImpl for SessionTab {
     fn paint(&mut self, painter: &mut Painter) {
-        let rect = self.contents_rect_f(None);
+        let rect = self.rect_f();
         let tl = rect.top_left();
         let bl = rect.bottom_left();
         let p = (tl.x() + 10., (tl.y() + bl.y()) / 2. - 1.);
@@ -64,11 +66,20 @@ impl WidgetImpl for SessionTab {
         } else {
             SESSION_DEAD_COLOR
         };
+
         painter.set_color(color);
         painter.set_antialiasing(true);
         let mut path = Path::default();
         path.add_circle(p, 3., None);
         painter.draw_path(&path);
+
+        let r = 7.;
+        painter.set_color(TERMINAL_BACKGROUND);
+
+        let lb = FRect::new(rect.left() - r, rect.bottom() - r, r, r);
+        painter.draw_varying_arc_global(lb, 0., 90., 2., 2., 8);
+        let rb = FRect::new(rect.right(), rect.bottom() - r, r, r);
+        painter.draw_varying_arc_global(rb, 90., 90., 2., 2., 8);
     }
 }
 

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use godot::{classes::notify::NodeNotification, prelude::*};
 use ipc::{IPC_DATA_SIZE, ipc_context::IpcContext, ipc_event::IpcEvent};
 use widestring::WideString;
@@ -9,6 +11,7 @@ use crate::{command::Command, shell::Shell};
 #[class(init, base = Node)]
 pub struct Termdot {
     #[export]
+    #[init(val = GString::from_str("termdot").unwrap())]
     host_name: GString,
 
     ipc_context: Option<IpcContext>,
@@ -32,6 +35,7 @@ impl INode for Termdot {
                     continue;
                 }
                 self.shell.insert_command(name, command);
+                self.shell.init_internal_command();
             }
         }
 
@@ -90,6 +94,20 @@ impl INode for Termdot {
 
 #[godot_api]
 impl Termdot {
+    /// Get current terminal size, represent as (cols, rows)
+    #[func]
+    pub fn get_terminal_size(&self) -> Vector2i {
+        self.shell.get_terminal_size()
+    }
+
+    /// Get current cursor position, represent as (cols, rows)
+    ///
+    /// The origin point of cursor is (1, 1)
+    #[func]
+    pub fn get_cursor_position(&self) -> Vector2i {
+        self.shell.get_cursor_position()
+    }
+
     #[func]
     fn _termdot_exit(&mut self) {
         godot_print!("Termdot exit.");

@@ -1,7 +1,8 @@
-use crate::command::Command;
+use crate::command::{Command, internal::InternalCommand};
 use crate::utils::charmap::*;
 use ahash::AHashMap;
 use derivative::Derivative;
+use godot::global::godot_print;
 use godot::{
     builtin::{GString, Vector2i, array},
     obj::Gd,
@@ -26,6 +27,7 @@ pub struct Shell {
     columns: i32,
     argv: [wchar_t; 2],
 
+    internal_command_map: AHashMap<String, InternalCommand>,
     command_map: AHashMap<String, Gd<Command>>,
     #[derivative(Default(value = "Box::new(VT102Emulation::new(None))"))]
     emulation: Box<VT102Emulation>,
@@ -37,6 +39,9 @@ impl Shell {
     pub fn insert_command(&mut self, name: String, command: Gd<Command>) {
         self.command_map.insert(name, command);
     }
+
+    #[inline]
+    pub fn init_internal_command(&mut self) {}
 
     #[inline]
     pub fn set_terminal_size(&mut self, cols: i32, rows: i32) {
@@ -199,7 +204,10 @@ impl Shell {
                     None
                 }
             }
-            CTL_TAB => None,
+            CTL_TAB => {
+                self.command_completion();
+                None
+            }
             CTL_SIGINT => None,
             CTL_CARRIAGE_RETURN => {
                 let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
@@ -226,11 +234,15 @@ impl Shell {
         if c != CTL_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
             self.reset_argv();
         }
+
+        let cursor = self.get_cursor_position();
+        godot_print!("col,row = ({}, {})", cursor.x, cursor.y);
     }
 }
 
 /// Private functions:
 impl Shell {
+    #[inline]
     fn extend(&mut self, c: wchar_t) {
         self.buffer.insert(self.cursor, c);
         self.cursor += 1;
@@ -254,6 +266,11 @@ impl Shell {
         if let Some(gd) = self.command_map.get(command) {
             self.is_executing = true;
             Command::start(gd.clone(), params);
+            self.next_line();
+        } else if let Some(icm) = self.internal_command_map.get_mut(command) {
+            self.is_executing = true;
+            icm.start(params);
+            self.next_line();
         } else {
             self.is_executing = false;
             let send_back = if data.is_empty() {
@@ -304,10 +321,115 @@ impl Shell {
         (self.cursor_origin.y + row, col)
     }
 
+    #[inline]
     fn map_set_cursor(&mut self) {
         let (row, col) = self.cursor_to_position();
         let screen = self.emulation.emulation_mut().current_screen_mut();
         screen.set_cursor_y(row);
         screen.set_cursor_x(col);
+    }
+
+    fn command_completion(&mut self) {
+        let input = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+        let mut echo = String::new();
+        let mut prompt = false;
+        if input.is_empty() {
+            let commands: Vec<&str> = self.command_map.keys().map(|c| c.as_str()).collect();
+            if commands.is_empty() {
+                let cursor_pos = self.get_cursor_position();
+                echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+            } else {
+                echo.push_str(&self.format_commands_list(&commands));
+                prompt = true;
+            }
+        } else if input.len() != self.cursor {
+            let cursor_pos = self.get_cursor_position();
+            echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+        } else {
+            let mut commands: Vec<&str> = self
+                .command_map
+                .keys()
+                .filter_map(|cmd| {
+                    if cmd.starts_with(&input) {
+                        Some(cmd.as_str())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            if commands.len() > 1 {
+                echo.push_str(&self.format_commands_list(&commands));
+                prompt = true;
+            } else if commands.len() == 1 {
+                let origin = self.cursor_origin;
+                let cmd = commands.pop().unwrap();
+                echo.push_str(&format!("\x1B[{};{}H{}", origin.y, origin.x, cmd));
+
+                let wstr = WideString::from_str(cmd);
+                self.buffer = wstr.as_slice().to_vec();
+                self.cursor = self.buffer.len();
+            } else {
+                let cursor_pos = self.get_cursor_position();
+                echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+            }
+        }
+
+        if prompt {
+            echo.push_str(&format!("\r\n{}", self.prompt));
+        }
+
+        if !echo.is_empty() {
+            for e in IpcEvent::pack_data(&echo) {
+                self.echos.push_back(e);
+            }
+
+            if prompt {
+                // [`LocalDisplay`](termio::emulator::emulation::local_display::LocalDisplay)
+                // will cache the input text automatically and replay it when detected \u{200B},
+                // so just handle the input on shell side.
+                echo.push_str(&input);
+            }
+            let wstr = WideString::from_str(&echo);
+            for &c in wstr.as_slice() {
+                self.emulation.receive_char(c);
+            }
+
+            if prompt {
+                self.cursor_origin = self.get_cursor_position();
+            }
+        }
+    }
+
+    fn format_commands_list(&self, commands: &[&str]) -> String {
+        let size = self.get_terminal_size();
+        let width = size.x as usize;
+        let mut current_width = 0;
+
+        let mut echo = "\r\n".to_string();
+        for cmd in commands {
+            let cmd_len = cmd.len() + 2;
+
+            if current_width + cmd_len > width {
+                echo.push_str("\r\n");
+                current_width = 0;
+            }
+
+            echo.push_str(&format!("{}  ", cmd));
+            current_width += cmd_len;
+        }
+        echo
+    }
+
+    #[inline]
+    fn next_line(&mut self) {
+        let send_back = "\r\n";
+        self.echos
+            .push_back(IpcEvent::pack_data(&send_back).pop().unwrap());
+        let wstr = WideString::from_str(&send_back);
+        for &c in wstr.as_slice() {
+            self.emulation.receive_char(c);
+        }
+        self.cursor_origin = self.get_cursor_position();
     }
 }

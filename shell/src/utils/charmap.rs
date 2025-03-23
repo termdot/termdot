@@ -1,3 +1,13 @@
+/// Common character str
+pub const DOT: &str = ".";
+pub const SLASH: &str = "/";
+pub const CR: &str = "\r";
+pub const LF: &str = "\n";
+pub const CRLF: &str = "\r\n";
+pub const TAB: &str = "\t";
+pub const EMPTY: &str = "";
+pub const SPACE: &str = " ";
+
 /// Common character code points
 pub const ASCII_SPACE: u16 = 0x0020; // Space
 pub const ASCII_TILDE: u16 = 0x007E; // ~

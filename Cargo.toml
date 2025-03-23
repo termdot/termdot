@@ -30,6 +30,8 @@ rust-embed = { version = "8.3.0", features = [
     "debug-embed",
     "include-exclude",
 ] }
+strum = "0.26.3"
+strum_macros = "0.26.3"
 
 [dependencies]
 tmui = { workspace = true }

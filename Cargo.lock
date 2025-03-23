@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "rust-embed",
 ]
@@ -413,9 +413,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.2.16"
+version = "1.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be714c154be609ec7f5dad223a33bf1482fff90472de28f7362806e6d4832b8c"
+checksum = "1fcb57c740ae1daf453ae85f16e37396f672b039e00d9d866e07ddb24e328e3a"
 dependencies = [
  "jobserver",
  "libc",
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "lazy_static",
  "libs",
@@ -877,7 +877,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "bitvec",
  "cli",
@@ -1131,18 +1131,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gensym"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "913dce4c5f06c2ea40fc178c06f777ac89fc6b1383e90c254fafb1abe4ba3c82"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.100",
- "uuid",
-]
-
-[[package]]
 name = "gethostname"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1294,7 +1282,7 @@ dependencies = [
 [[package]]
 name = "godot"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
  "godot-core",
  "godot-macros",
@@ -1303,7 +1291,7 @@ dependencies = [
 [[package]]
 name = "godot-bindings"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
  "gdextension-api",
 ]
@@ -1311,12 +1299,12 @@ dependencies = [
 [[package]]
 name = "godot-cell"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 
 [[package]]
 name = "godot-codegen"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
  "godot-bindings",
  "heck 0.5.0",
@@ -1329,7 +1317,7 @@ dependencies = [
 [[package]]
 name = "godot-core"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
  "glam",
  "godot-bindings",
@@ -1341,20 +1329,21 @@ dependencies = [
 [[package]]
 name = "godot-ffi"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
- "gensym",
  "godot-bindings",
  "godot-codegen",
+ "godot-macros",
  "libc",
 ]
 
 [[package]]
 name = "godot-macros"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#7f5191e577c40dc830cc8dac61761a45fa92f485"
+source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
 dependencies = [
  "godot-bindings",
+ "libc",
  "proc-macro2",
  "quote",
  "venial",
@@ -1809,7 +1798,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "asset",
  "chrono",
@@ -1923,7 +1912,7 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
+source = "git+https://github.com/toocol/tmui#4b71ec66fce6411225dad4a3a3d1c07dd3f02ba6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2323,7 +2312,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "asset",
  "cli",
@@ -2381,7 +2370,7 @@ version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
- "zerocopy 0.8.23",
+ "zerocopy 0.8.24",
 ]
 
 [[package]]
@@ -2500,7 +2489,7 @@ checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
 dependencies = [
  "rand_chacha 0.9.0",
  "rand_core 0.9.3",
- "zerocopy 0.8.23",
+ "zerocopy 0.8.24",
 ]
 
 [[package]]
@@ -2734,9 +2723,9 @@ dependencies = [
 
 [[package]]
 name = "rust_decimal"
-version = "1.37.0"
+version = "1.37.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c24af6e7ac43c88a8a458d1139d0246fdce2f6cd2f1ac6cb51eb88b29c978af"
+checksum = "faa7de2ba56ac291bd90c6b9bece784a52ae1411f9506544b3eae36dd2356d50"
 dependencies = [
  "arrayvec",
  "borsh",
@@ -2970,6 +2959,8 @@ dependencies = [
  "godot",
  "ipc",
  "lazy_static",
+ "strum 0.26.3",
+ "strum_macros 0.26.4",
  "termio",
  "tmui",
  "wchar",
@@ -3144,6 +3135,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "063e6045c0e62079840579a7e47a355ae92f60eb74daaf156fb1e84ba164e63f"
 
 [[package]]
+name = "strum"
+version = "0.26.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
+
+[[package]]
 name = "strum_macros"
 version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3154,6 +3151,19 @@ dependencies = [
  "quote",
  "rustversion",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.26.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
+dependencies = [
+ "heck 0.5.0",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.100",
 ]
 
 [[package]]
@@ -3236,7 +3246,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#de40fb01424e20a5bc1708751c773f39aceddc17"
+source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
 dependencies = [
  "cli",
  "emulator",
@@ -3341,7 +3351,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tipc"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
+source = "git+https://github.com/toocol/tmui#4b71ec66fce6411225dad4a3a3d1c07dd3f02ba6"
 dependencies = [
  "lazy_static",
  "log",
@@ -3359,7 +3369,7 @@ dependencies = [
 [[package]]
 name = "tlib"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
+source = "git+https://github.com/toocol/tmui#4b71ec66fce6411225dad4a3a3d1c07dd3f02ba6"
 dependencies = [
  "ahash 0.8.11",
  "bitflags 2.9.0",
@@ -3376,8 +3386,8 @@ dependencies = [
  "paste",
  "rayon",
  "skia-safe",
- "strum",
- "strum_macros",
+ "strum 0.24.1",
+ "strum_macros 0.24.3",
  "tokio",
  "widestring",
  "winapi 0.3.9",
@@ -3387,7 +3397,7 @@ dependencies = [
 [[package]]
 name = "tmui"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#cb10a68f5cfbd0b7b4c1dd7755b0e2f374170e7d"
+source = "git+https://github.com/toocol/tmui#4b71ec66fce6411225dad4a3a3d1c07dd3f02ba6"
 dependencies = [
  "ahash 0.8.11",
  "beep",
@@ -3411,8 +3421,8 @@ dependencies = [
  "regex",
  "rust-embed",
  "rust_decimal",
- "strum",
- "strum_macros",
+ "strum 0.24.1",
+ "strum_macros 0.24.3",
  "tipc",
  "tlib",
  "usvg",
@@ -3667,9 +3677,6 @@ name = "uuid"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
-dependencies = [
- "getrandom 0.3.2",
-]
 
 [[package]]
 name = "vcpkg"
@@ -4619,11 +4626,11 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.8.23"
+version = "0.8.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd97444d05a4328b90e75e503a34bad781f14e28a823ad3557f0750df1ebcbc6"
+checksum = "2586fea28e186957ef732a5f8b3be2da217d65c5969d4b1e17f973ebbe876879"
 dependencies = [
- "zerocopy-derive 0.8.23",
+ "zerocopy-derive 0.8.24",
 ]
 
 [[package]]
@@ -4639,9 +4646,9 @@ dependencies = [
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.23"
+version = "0.8.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6352c01d0edd5db859a63e2605f4ea3183ddbd15e2c4a9e7d32184df75e4f154"
+checksum = "a996a8f63c5c4448cd959ac1bab0aaa3306ccfd060472f85943ee0750f0169be"
 dependencies = [
  "proc-macro2",
  "quote",
