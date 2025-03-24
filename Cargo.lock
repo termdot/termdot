@@ -2959,6 +2959,7 @@ dependencies = [
  "godot",
  "ipc",
  "lazy_static",
+ "rand 0.9.0",
  "strum 0.26.3",
  "strum_macros 0.26.4",
  "termio",
@@ -3236,6 +3237,7 @@ dependencies = [
 name = "termdot"
 version = "0.1.0"
 dependencies = [
+ "ipc",
  "log4rs",
  "pty 0.1.0",
  "rust-embed",

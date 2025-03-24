@@ -1,22 +1,45 @@
-use std::str::FromStr;
-
-use godot::{classes::notify::NodeNotification, prelude::*};
-use ipc::{IPC_DATA_SIZE, ipc_context::IpcContext, ipc_event::IpcEvent};
+use godot::{
+    classes::{ProjectSettings, notify::NodeNotification},
+    prelude::*,
+};
+use ipc::{
+    IPC_DATA_SIZE,
+    ipc_context::{IpcContext, SHARED_ID},
+    ipc_event::IpcEvent,
+};
+use std::{process::Child, str::FromStr};
+use tmui::tlib::utils::SnowflakeGuidGenerator;
 use widestring::WideString;
 
 use crate::{command::Command, shell::Shell};
 
-/// Main Godot node for plugin status management, and interactive with users.
+#[cfg(target_os = "windows")]
+pub const APP_PATH: &str = "res://addons/termdot/termdot.exe";
+
 #[derive(GodotClass)]
+/// Main Godot node for plugin status management, and interactive with users.
 #[class(init, base = Node)]
+#[allow(dead_code)]
 pub struct Termdot {
     #[export]
+    /// Host name of shell, will represent as `host_name> `.
     #[init(val = GString::from_str("termdot").unwrap())]
     host_name: GString,
+
+    #[export]
+    /// External terminal will run automatically when ready.
+    #[init(val = true)]
+    auto_run: bool,
+
+    #[export]
+    /// When action `run_action` detected pressed, run the external terminal if it's not running.
+    #[init(val = GString::from_str("termdot_run").unwrap())]
+    run_action: GString,
 
     ipc_context: Option<IpcContext>,
 
     shell: Shell,
+    child: Option<Child>,
 
     base: Base<Node>,
 }
@@ -39,6 +62,9 @@ impl INode for Termdot {
             }
         }
 
+        let id = SnowflakeGuidGenerator::next_id().unwrap();
+        SHARED_ID.store(id, std::sync::atomic::Ordering::Release);
+
         self.ipc_context = IpcContext::master();
         if self.ipc_context.is_none() {
             godot_warn!("[Termdot::ready] Create master `IpcContext` failed.")
@@ -46,8 +72,13 @@ impl INode for Termdot {
 
         self.shell.set_prompt(&self.host_name);
 
-        let callable = self.base().callable("_temdot_exit");
-        self.base_mut().connect("tree_exiting", &callable);
+        let path = ProjectSettings::singleton()
+            .globalize_path(APP_PATH)
+            .to_string();
+        match std::process::Command::new(path).arg(id.to_string()).spawn() {
+            Ok(c) => self.child = Some(c),
+            Err(e) => godot_error!("Run external app failed, e = {:?}", e),
+        }
     }
 
     fn process(&mut self, _delta: f64) {
@@ -75,7 +106,7 @@ impl INode for Termdot {
     }
 
     fn exit_tree(&mut self) {
-        self._termdot_exit();
+        self.termdot_exit();
     }
 
     #[allow(clippy::single_match)]
@@ -85,7 +116,7 @@ impl INode for Termdot {
             | NodeNotification::UNPARENTED
             | NodeNotification::WM_CLOSE_REQUEST
             | NodeNotification::CRASH => {
-                self._termdot_exit();
+                self.termdot_exit();
             }
             _ => {}
         }
@@ -94,28 +125,18 @@ impl INode for Termdot {
 
 #[godot_api]
 impl Termdot {
-    /// Get current terminal size, represent as (cols, rows)
     #[func]
+    /// Get current terminal size, represent as (cols, rows)
     pub fn get_terminal_size(&self) -> Vector2i {
         self.shell.get_terminal_size()
     }
 
+    #[func]
     /// Get current cursor position, represent as (cols, rows)
     ///
     /// The origin point of cursor is (1, 1)
-    #[func]
     pub fn get_cursor_position(&self) -> Vector2i {
         self.shell.get_cursor_position()
-    }
-
-    #[func]
-    fn _termdot_exit(&mut self) {
-        godot_print!("Termdot exit.");
-
-        if let Some(ctx) = self.ipc_context.as_ref() {
-            let _ = ctx.try_send(IpcEvent::Exit);
-        }
-        self.ipc_context = None;
     }
 }
 
@@ -138,5 +159,14 @@ impl Termdot {
         for &c in wstr.as_slice() {
             self.shell.receive_char(c);
         }
+    }
+
+    fn termdot_exit(&mut self) {
+        godot_print!("Termdot exit.");
+
+        if let Some(ctx) = self.ipc_context.as_ref() {
+            let _ = ctx.try_send(IpcEvent::Exit);
+        }
+        self.ipc_context = None;
     }
 }

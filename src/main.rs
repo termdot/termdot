@@ -3,12 +3,23 @@ pub mod assets;
 pub mod components;
 
 use components::{color_table::APP_BACKGROUND, title_bar::TitleBar};
+use ipc::ipc_context::SHARED_ID;
 use pty::termdot_pty::TermdotPty;
+use std::sync::atomic::Ordering;
 use termio::{cli::session::SessionPropsId, emulator::core::terminal_emulator::TerminalEmulator};
 use tmui::{application::Application, application_window::ApplicationWindow, prelude::*};
 
 fn main() {
-    log4rs::init_file("src/log4rs.yaml", Default::default()).unwrap();
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 2 {
+        let id = args[1].parse::<u64>().unwrap();
+        SHARED_ID.store(id, Ordering::Release);
+    }
+
+    #[cfg(debug_assertions)]
+    {
+        log4rs::init_file("src/log4rs.yaml", Default::default()).unwrap();
+    }
 
     let app = Application::builder()
         .width(1020)

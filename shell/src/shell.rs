@@ -2,12 +2,12 @@ use crate::command::{Command, internal::InternalCommand};
 use crate::utils::charmap::*;
 use ahash::AHashMap;
 use derivative::Derivative;
-use godot::global::godot_print;
 use godot::{
     builtin::{GString, Vector2i, array},
     obj::Gd,
 };
 use ipc::ipc_event::IpcEvent;
+use std::cmp::Ordering;
 use std::{collections::VecDeque, str::FromStr};
 use termio::emulator::emulation::{Emulation, VT102Emulation};
 use wchar::{wch, wchar_t};
@@ -234,9 +234,6 @@ impl Shell {
         if c != CTL_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
             self.reset_argv();
         }
-
-        let cursor = self.get_cursor_position();
-        godot_print!("col,row = ({}, {})", cursor.x, cursor.y);
     }
 }
 
@@ -358,20 +355,24 @@ impl Shell {
                 })
                 .collect();
 
-            if commands.len() > 1 {
-                echo.push_str(&self.format_commands_list(&commands));
-                prompt = true;
-            } else if commands.len() == 1 {
-                let origin = self.cursor_origin;
-                let cmd = commands.pop().unwrap();
-                echo.push_str(&format!("\x1B[{};{}H{}", origin.y, origin.x, cmd));
+            match commands.len().cmp(&1) {
+                Ordering::Greater => {
+                    echo.push_str(&self.format_commands_list(&commands));
+                    prompt = true;
+                }
+                Ordering::Equal => {
+                    let origin = self.cursor_origin;
+                    let cmd = commands.pop().unwrap();
+                    echo.push_str(&format!("\x1B[{};{}H{}", origin.y, origin.x, cmd));
 
-                let wstr = WideString::from_str(cmd);
-                self.buffer = wstr.as_slice().to_vec();
-                self.cursor = self.buffer.len();
-            } else {
-                let cursor_pos = self.get_cursor_position();
-                echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+                    let wstr = WideString::from_str(cmd);
+                    self.buffer = wstr.as_slice().to_vec();
+                    self.cursor = self.buffer.len();
+                }
+                Ordering::Less => {
+                    let cursor_pos = self.get_cursor_position();
+                    echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+                }
             }
         }
 
@@ -384,19 +385,20 @@ impl Shell {
                 self.echos.push_back(e);
             }
 
-            if prompt {
-                // [`LocalDisplay`](termio::emulator::emulation::local_display::LocalDisplay)
-                // will cache the input text automatically and replay it when detected \u{200B},
-                // so just handle the input on shell side.
-                echo.push_str(&input);
-            }
             let wstr = WideString::from_str(&echo);
             for &c in wstr.as_slice() {
                 self.emulation.receive_char(c);
             }
-
             if prompt {
                 self.cursor_origin = self.get_cursor_position();
+
+                // [`LocalDisplay`](termio::emulator::emulation::local_display::LocalDisplay)
+                // will cache the input text automatically and replay it when detected \u{200B},
+                // so just handle the input on shell side.
+                let wstr = WideString::from_str(&input);
+                for &c in wstr.as_slice() {
+                    self.emulation.receive_char(c);
+                }
             }
         }
     }
@@ -425,7 +427,7 @@ impl Shell {
     fn next_line(&mut self) {
         let send_back = "\r\n";
         self.echos
-            .push_back(IpcEvent::pack_data(&send_back).pop().unwrap());
+            .push_back(IpcEvent::pack_data(send_back).pop().unwrap());
         let wstr = WideString::from_str(&send_back);
         for &c in wstr.as_slice() {
             self.emulation.receive_char(c);
