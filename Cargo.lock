@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "rust-embed",
 ]
@@ -308,9 +308,9 @@ dependencies = [
 
 [[package]]
 name = "borsh"
-version = "1.5.6"
+version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2b74d67a0fc0af8e9823b79fd1c43a0900e5a8f0e0f4cc9210796bf3a820126"
+checksum = "ad8646f98db542e39fc66e68a20b2144f6a732636df7c2354e74645faaa433ce"
 dependencies = [
  "borsh-derive",
  "cfg_aliases 0.2.1",
@@ -318,9 +318,9 @@ dependencies = [
 
 [[package]]
 name = "borsh-derive"
-version = "1.5.6"
+version = "1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d37ed1b2c9b78421218a0b4f6d8349132d6ec2cfeba1cfb0118b0a8e268df9e"
+checksum = "fdd1d3c0c2f5833f22386f252fe8ed005c7f59fdcddeef025c01b4c3b9fd9ac3"
 dependencies = [
  "once_cell",
  "proc-macro-crate",
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "lazy_static",
  "libs",
@@ -877,7 +877,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "bitvec",
  "cli",
@@ -888,7 +888,7 @@ dependencies = [
  "log",
  "once_cell",
  "page_size",
- "pty 0.2.2",
+ "pty",
  "regex",
  "rust-embed",
  "termios",
@@ -1282,7 +1282,7 @@ dependencies = [
 [[package]]
 name = "godot"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "godot-core",
  "godot-macros",
@@ -1291,7 +1291,7 @@ dependencies = [
 [[package]]
 name = "godot-bindings"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "gdextension-api",
 ]
@@ -1299,12 +1299,12 @@ dependencies = [
 [[package]]
 name = "godot-cell"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 
 [[package]]
 name = "godot-codegen"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "godot-bindings",
  "heck 0.5.0",
@@ -1317,7 +1317,7 @@ dependencies = [
 [[package]]
 name = "godot-core"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "glam",
  "godot-bindings",
@@ -1329,7 +1329,7 @@ dependencies = [
 [[package]]
 name = "godot-ffi"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "godot-bindings",
  "godot-codegen",
@@ -1340,7 +1340,7 @@ dependencies = [
 [[package]]
 name = "godot-macros"
 version = "0.2.4"
-source = "git+https://github.com/godot-rust/gdext?branch=master#c9d8f526195879a361d1e73f78fcda2d4e7cb4d0"
+source = "git+https://github.com/godot-rust/gdext?branch=master#78ca88917690d00595aa78ac50d46b606c8938b8"
 dependencies = [
  "godot-bindings",
  "libc",
@@ -1439,14 +1439,15 @@ checksum = "9b112acc8b3adf4b107a8ec20977da0273a8c386765a3ec0229bd500a1443f9f"
 
 [[package]]
 name = "iana-time-zone"
-version = "0.1.61"
+version = "0.1.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "235e081f3925a06703c2d0117ea8b91f042756fd6e7a6e5d901e8ca1a996b220"
+checksum = "b2fd658b06e56721792c5df4475705b6cda790e9298d19d2f8af083457bcd127"
 dependencies = [
  "android_system_properties",
  "core-foundation-sys",
  "iana-time-zone-haiku",
  "js-sys",
+ "log",
  "wasm-bindgen",
  "windows-core 0.52.0",
 ]
@@ -1798,7 +1799,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "asset",
  "chrono",
@@ -1868,9 +1869,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 dependencies = [
  "serde",
 ]
@@ -2312,7 +2313,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "asset",
  "cli",
@@ -2419,15 +2420,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "pty"
-version = "0.1.0"
-dependencies = [
- "ipc",
- "termio",
- "tmui",
 ]
 
 [[package]]
@@ -3239,7 +3231,6 @@ version = "0.1.0"
 dependencies = [
  "ipc",
  "log4rs",
- "pty 0.1.0",
  "rust-embed",
  "termio",
  "tmui",
@@ -3248,7 +3239,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#915c45d33853609f06606fcad2fa5931c1bb5566"
+source = "git+https://github.com/toocol/termio#85fe88adedfa0eb7eadc60d82952556eff6a4e3a"
 dependencies = [
  "cli",
  "emulator",

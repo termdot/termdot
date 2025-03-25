@@ -1,3 +1,4 @@
+use crate::{command::Command, shell::Shell};
 use godot::{
     classes::{ProjectSettings, notify::NodeNotification},
     prelude::*,
@@ -10,8 +11,6 @@ use ipc::{
 use std::{process::Child, str::FromStr};
 use tmui::tlib::utils::SnowflakeGuidGenerator;
 use widestring::WideString;
-
-use crate::{command::Command, shell::Shell};
 
 #[cfg(target_os = "windows")]
 pub const APP_PATH: &str = "res://addons/termdot/termdot.exe";
@@ -47,6 +46,8 @@ pub struct Termdot {
 #[godot_api]
 impl INode for Termdot {
     fn ready(&mut self) {
+        self.shell.init();
+
         for child in self.base().get_children().iter_shared() {
             if let Ok(command) = child.try_cast::<Command>() {
                 let name = command.bind().get_command_name().to_string();
@@ -78,6 +79,12 @@ impl INode for Termdot {
         match std::process::Command::new(path).arg(id.to_string()).spawn() {
             Ok(c) => self.child = Some(c),
             Err(e) => godot_error!("Run external app failed, e = {:?}", e),
+        }
+
+        if let Some(ipc_ctx) = self.ipc_context.as_ref() {
+            if let Err(e) = ipc_ctx.try_send(IpcEvent::Ready) {
+                godot_error!("[Termdot::process] Send ipc event failed, e = {:?}", e);
+            }
         }
     }
 
@@ -120,23 +127,6 @@ impl INode for Termdot {
             }
             _ => {}
         }
-    }
-}
-
-#[godot_api]
-impl Termdot {
-    #[func]
-    /// Get current terminal size, represent as (cols, rows)
-    pub fn get_terminal_size(&self) -> Vector2i {
-        self.shell.get_terminal_size()
-    }
-
-    #[func]
-    /// Get current cursor position, represent as (cols, rows)
-    ///
-    /// The origin point of cursor is (1, 1)
-    pub fn get_cursor_position(&self) -> Vector2i {
-        self.shell.get_cursor_position()
     }
 }
 

@@ -1,5 +1,5 @@
 [workspace]
-members = ["shell", "ipc", "pty", "benchmark"]
+members = ["shell", "ipc", "benchmark"]
 
 [package]
 name = "termdot"
@@ -15,7 +15,6 @@ godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
 tmui = { git = "https://github.com/toocol/tmui" }
 termio = { git = "https://github.com/toocol/termio" }
 
-pty = { path = "pty/" }
 ipc = { path = "ipc/" }
 
 log = "0.4"
@@ -36,7 +35,6 @@ strum_macros = "0.26.3"
 [dependencies]
 tmui = { workspace = true }
 termio = { workspace = true }
-pty = { workspace = true }
 ipc = { workspace = true }
 log4rs = { workspace = true }
 rust-embed = { workspace = true }

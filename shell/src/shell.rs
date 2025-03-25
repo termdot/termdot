@@ -1,4 +1,5 @@
 use crate::command::{Command, internal::InternalCommand};
+use crate::utils::ansi_string::godot::AnsiString;
 use crate::utils::charmap::*;
 use ahash::AHashMap;
 use derivative::Derivative;
@@ -7,11 +8,17 @@ use godot::{
     obj::Gd,
 };
 use ipc::ipc_event::IpcEvent;
+use std::cell::RefCell;
 use std::cmp::Ordering;
+use std::ptr::NonNull;
 use std::{collections::VecDeque, str::FromStr};
 use termio::emulator::emulation::{Emulation, VT102Emulation};
 use wchar::{wch, wchar_t};
 use widestring::WideString;
+
+thread_local! {
+    pub static SHELL: RefCell<Option<NonNull<Shell>>> = RefCell::new(None);
+}
 
 #[derive(Derivative)]
 #[derivative(Default)]
@@ -36,6 +43,33 @@ pub struct Shell {
 
 impl Shell {
     #[inline]
+    pub fn init(&mut self) {
+        SHELL.with(|rf| *rf.borrow_mut() = NonNull::new(self));
+    }
+
+    #[inline]
+    /// Get current terminal size, represent as (cols, rows)
+    pub fn get_terminal_size(&self) -> Vector2i {
+        let screen = self.emulation.emulation().current_screen();
+        Vector2i::new(screen.get_columns(), screen.get_lines())
+    }
+
+    #[inline]
+    /// Get current cursor position, represent as (cols, rows)
+    ///
+    /// The origin point of cursor is (1, 1)
+    pub fn get_cursor_position(&self) -> Vector2i {
+        let screen = self.emulation.emulation().current_screen();
+        Vector2i::new(screen.get_cursor_x() + 1, screen.get_cursor_y() + 1)
+    }
+
+    #[inline]
+    pub fn echo(&mut self, text: Gd<AnsiString>) {
+        let text = text.bind().as_str().to_string();
+        self.echos.extend(IpcEvent::pack_data(&text));
+    }
+
+    #[inline]
     pub fn insert_command(&mut self, name: String, command: Gd<Command>) {
         self.command_map.insert(name, command);
     }
@@ -46,22 +80,6 @@ impl Shell {
     #[inline]
     pub fn set_terminal_size(&mut self, cols: i32, rows: i32) {
         self.emulation.emulation_mut().set_image_size(rows, cols);
-    }
-
-    /// Get current terminal size, represent as (cols, rows)
-    #[inline]
-    pub fn get_terminal_size(&self) -> Vector2i {
-        let screen = self.emulation.emulation().current_screen();
-        Vector2i::new(screen.get_columns(), screen.get_lines())
-    }
-
-    /// Get current cursor position, represent as (cols, rows)
-    ///
-    /// The origin point of cursor is (1, 1)
-    #[inline]
-    pub fn get_cursor_position(&self) -> Vector2i {
-        let screen = self.emulation.emulation().current_screen();
-        Vector2i::new(screen.get_cursor_x() + 1, screen.get_cursor_y() + 1)
     }
 
     #[inline]
@@ -260,21 +278,22 @@ impl Shell {
             Some(c) => c,
             None => return,
         };
+
+        self.next_line();
         if let Some(gd) = self.command_map.get(command) {
             self.is_executing = true;
-            Command::start(gd.clone(), params);
-            self.next_line();
+            let gd = gd.clone();
+            Command::start(gd, params);
         } else if let Some(icm) = self.internal_command_map.get_mut(command) {
             self.is_executing = true;
             icm.start(params);
-            self.next_line();
         } else {
             self.is_executing = false;
             let send_back = if data.is_empty() {
-                format!("\r\n{}", self.prompt)
+                format!("{}", self.prompt)
             } else {
                 format!(
-                    "\r\n`{}` is not recognized as an internal or external command.\r\n{}",
+                    "`{}` is not recognized as an internal or external command.\r\n{}",
                     command, self.prompt,
                 )
             };

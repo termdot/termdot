@@ -1,3 +1,8 @@
+use crate::event_bus::{
+    event_handle::EventHandle,
+    events::{EventType, Events}, EventBus,
+};
+
 use super::color_table::{
     SESSION_ALIVE_COLOR, SESSION_DEAD_COLOR, TERMINAL_BACKGROUND, TERMINAL_FOREGROUND,
 };
@@ -25,6 +30,8 @@ impl ObjectSubclass for SessionTab {
 
 impl ObjectImpl for SessionTab {
     fn initialize(&mut self) {
+        EventBus::register(self);
+
         self.width_request(200);
         self.height_request(25);
         self.set_margin_left(8);
@@ -93,5 +100,22 @@ impl SessionTab {
     pub fn set_session_alive(&mut self, alive: bool) {
         self.session_alive = alive;
         self.update();
+    }
+}
+
+impl EventHandle for SessionTab {
+    #[inline]
+    fn listen(&self) -> Vec<EventType> {
+        vec![EventType::MasterReady]
+    }
+
+    #[inline]
+    fn handle(&mut self, evt: &Events) {
+        match evt {
+            Events::MasterReay => {
+                self.set_session_alive(true);
+            }
+            _ => {}
+        }
     }
 }

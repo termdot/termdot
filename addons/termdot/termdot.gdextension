@@ -1,0 +1,14 @@
+[configuration]
+entry_symbol = "termdot_init"
+compatibility_minimum = 4.1
+reloadable = true
+
+[libraries]
+linux.debug.x86_64 =     "res://addons/termdot/libshell.so"
+linux.release.x86_64 =   "res://addons/termdot/libshell.so"
+windows.debug.x86_64 =   "res://addons/termdot/shell.dll"
+windows.release.x86_64 = "res://addons/termdot/shell.dll"
+macos.debug =            "res://addons/termdot/libshell.dylib"
+macos.release =          "res://addons/termdot/libshell.dylib"
+macos.debug.arm64 =      "res://addons/termdot/libshell.dylib"
+macos.release.arm64 =    "res://addons/termdot/libshell.dylib"
