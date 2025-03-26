@@ -1,3 +1,4 @@
+use crate::command::execute_status::ShExecuteStatus;
 use crate::command::{Command, internal::InternalCommand};
 use crate::utils::ansi_string::godot::AnsiString;
 use crate::utils::charmap::*;
@@ -39,6 +40,8 @@ pub struct Shell {
     #[derivative(Default(value = "Box::new(VT102Emulation::new(None))"))]
     emulation: Box<VT102Emulation>,
     echos: VecDeque<IpcEvent>,
+
+    running_command: Option<Gd<Command>>,
 }
 
 impl Shell {
@@ -67,6 +70,11 @@ impl Shell {
     pub fn echo(&mut self, text: Gd<AnsiString>) {
         let text = text.bind().as_str().to_string();
         self.echos.extend(IpcEvent::pack_data(&text));
+
+        let wstr = WideString::from_str(&text);
+        for &c in wstr.as_slice() {
+            self.emulation.receive_char(c);
+        }
     }
 
     #[inline]
@@ -100,8 +108,30 @@ impl Shell {
     }
 
     #[inline]
+    pub fn crlf_prompt(&mut self) {
+        let prompt = format!("\r\n{}", self.prompt);
+        let wstr = WideString::from_str(&prompt);
+        for &c in wstr.as_slice() {
+            self.emulation.receive_char(c);
+        }
+        self.echos.extend(IpcEvent::pack_data(&prompt));
+        self.cursor_origin = self.get_cursor_position();
+        self.columns = self.get_terminal_size().x;
+    }
+
+    #[inline]
     pub fn next_echo(&mut self) -> Option<IpcEvent> {
         self.echos.pop_front()
+    }
+
+    #[inline]
+    pub fn process_running_command(&mut self) {
+        if let Some(gd) = self.running_command.clone() {
+            if Command::running(gd) == ShExecuteStatus::Done {
+                self.running_command = None;
+                self.crlf_prompt();
+            }
+        }
     }
 
     pub fn receive_char(&mut self, c: wchar_t) {
@@ -283,7 +313,11 @@ impl Shell {
         if let Some(gd) = self.command_map.get(command) {
             self.is_executing = true;
             let gd = gd.clone();
-            Command::start(gd, params);
+
+            match Command::start(gd.clone(), params) {
+                ShExecuteStatus::Done => self.crlf_prompt(),
+                ShExecuteStatus::Running => self.running_command = Some(gd),
+            }
         } else if let Some(icm) = self.internal_command_map.get_mut(command) {
             self.is_executing = true;
             icm.start(params);
@@ -359,8 +393,8 @@ impl Shell {
                 prompt = true;
             }
         } else if input.len() != self.cursor {
-            let cursor_pos = self.get_cursor_position();
-            echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
+            let cursor_origin = self.cursor_origin;
+            echo.push_str(&format!("\x1B[{};{}H", cursor_origin.y, cursor_origin.x));
         } else {
             let mut commands: Vec<&str> = self
                 .command_map
@@ -388,10 +422,7 @@ impl Shell {
                     self.buffer = wstr.as_slice().to_vec();
                     self.cursor = self.buffer.len();
                 }
-                Ordering::Less => {
-                    let cursor_pos = self.get_cursor_position();
-                    echo.push_str(&format!("\x1B[{};{}H", cursor_pos.y, cursor_pos.x));
-                }
+                Ordering::Less => {}
             }
         }
 

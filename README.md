@@ -8,7 +8,7 @@
 
 Terminal style external command executor for Godot.
 
-Supports control characters and escape sequences of XTerm, VT102, and belows.
+Supports control characters and escape sequences of XTerm, VT102.
 
 ![Termdot Image](src/resources/termdot.png)
 
@@ -37,7 +37,7 @@ extends Command
 
 # This method is executed when the command is detected.
 # The command is trimmed by spaces, and parameters are passed as `params`.
-func _start(params: Array[GString]) -> int:
+func _start(params: Array[String]) -> int:
     # Return values:
     # ExecuteStatus.DONE
     # ExecuteStatus.RUNNING

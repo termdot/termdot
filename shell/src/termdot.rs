@@ -48,6 +48,8 @@ impl INode for Termdot {
     fn ready(&mut self) {
         self.shell.init();
 
+        self.shell.init_internal_command();
+
         for child in self.base().get_children().iter_shared() {
             if let Ok(command) = child.try_cast::<Command>() {
                 let name = command.bind().get_command_name().to_string();
@@ -59,7 +61,6 @@ impl INode for Termdot {
                     continue;
                 }
                 self.shell.insert_command(name, command);
-                self.shell.init_internal_command();
             }
         }
 
@@ -103,6 +104,8 @@ impl INode for Termdot {
                 IpcEvent::SendData(data, len) => self.recv_data(&data, len),
             }
         }
+
+        self.shell.process_running_command();
 
         let ipc_context = self.ipc_context.as_ref().unwrap();
         while let Some(echo) = self.shell.next_echo() {

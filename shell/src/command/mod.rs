@@ -19,12 +19,12 @@ pub struct Command {
 impl Command {
     #[func(virtual, gd_self)]
     pub fn start(gd: Gd<Self>, params: Array<GString>) -> ShExecuteStatus {
-        ShExecuteStatus::Running
+        ShExecuteStatus::Done
     }
 
     #[func(virtual, gd_self)]
     pub fn running(gd: Gd<Self>) -> ShExecuteStatus {
-        ShExecuteStatus::Running
+        ShExecuteStatus::Done
     }
 
     #[func]
