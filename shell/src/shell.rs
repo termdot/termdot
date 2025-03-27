@@ -1,6 +1,9 @@
 use crate::command::execute_status::ShExecuteStatus;
+use crate::command::internal::cls::CmdCls;
+use crate::command::internal::{IInternalCommand, InternalCommandHnd};
 use crate::command::{Command, internal::InternalCommand};
 use crate::utils::ansi_string::godot::AnsiString;
+use crate::utils::ansi_string::rust::ShAnsiString;
 use crate::utils::charmap::*;
 use ahash::AHashMap;
 use derivative::Derivative;
@@ -14,6 +17,8 @@ use std::cmp::Ordering;
 use std::ptr::NonNull;
 use std::{collections::VecDeque, str::FromStr};
 use termio::emulator::emulation::{Emulation, VT102Emulation};
+use tmui::tlib::global::SemanticExt;
+use tmui::tlib::ptr_mut;
 use wchar::{wch, wchar_t};
 use widestring::WideString;
 
@@ -42,6 +47,7 @@ pub struct Shell {
     echos: VecDeque<IpcEvent>,
 
     running_command: Option<Gd<Command>>,
+    running_internal_command: Option<InternalCommandHnd>,
 }
 
 impl Shell {
@@ -78,12 +84,26 @@ impl Shell {
     }
 
     #[inline]
+    pub fn sh_echo(&mut self, text: ShAnsiString) {
+        let text = text.as_str().to_string();
+        self.echos.extend(IpcEvent::pack_data(&text));
+
+        let wstr = WideString::from_str(&text);
+        for &c in wstr.as_slice() {
+            self.emulation.receive_char(c);
+        }
+    }
+
+    #[inline]
     pub fn insert_command(&mut self, name: String, command: Gd<Command>) {
         self.command_map.insert(name, command);
     }
 
     #[inline]
-    pub fn init_internal_command(&mut self) {}
+    pub fn init_internal_command(&mut self) {
+        let cls = CmdCls.boxed();
+        self.internal_command_map.insert(cls.command_name(), cls);
+    }
 
     #[inline]
     pub fn set_terminal_size(&mut self, cols: i32, rows: i32) {
@@ -126,12 +146,34 @@ impl Shell {
 
     #[inline]
     pub fn process_running_command(&mut self) {
+        if let Some(icmd) = self.running_internal_command {
+            if ptr_mut!(icmd).running() == ShExecuteStatus::Done {
+                self.running_internal_command = None;
+                self.crlf_prompt();
+            }
+        }
+
         if let Some(gd) = self.running_command.clone() {
             if Command::running(gd) == ShExecuteStatus::Done {
                 self.running_command = None;
                 self.crlf_prompt();
             }
         }
+    }
+
+    #[inline]
+    pub fn reset(&mut self) {
+        self.emulation.reset();
+    }
+
+    #[inline]
+    pub fn get_emulation(&self) -> &VT102Emulation {
+        self.emulation.as_ref()
+    }
+
+    #[inline]
+    pub fn get_emulation_mut(&mut self) -> &mut VT102Emulation {
+        self.emulation.as_mut()
     }
 
     pub fn receive_char(&mut self, c: wchar_t) {
@@ -263,7 +305,7 @@ impl Shell {
                 self.buffer.clear();
                 self.cursor = 0;
 
-                self.excute_command(&data);
+                self.execute_command(&data);
 
                 None
             }
@@ -293,7 +335,7 @@ impl Shell {
         self.cursor += 1;
     }
 
-    fn excute_command(&mut self, data: &str) {
+    fn execute_command(&mut self, data: &str) {
         let commands = data.trim().split(" ");
         let (mut command, mut params) = (None, array![]);
         for (i, c) in commands.into_iter().enumerate() {
@@ -310,7 +352,13 @@ impl Shell {
         };
 
         self.next_line();
-        if let Some(gd) = self.command_map.get(command) {
+        if let Some(icmd) = self.internal_command_map.get_mut(command) {
+            self.is_executing = true;
+            match icmd.start(params) {
+                ShExecuteStatus::Done => self.prompt(),
+                ShExecuteStatus::Running => self.running_internal_command = Some(icmd.as_mut()),
+            }
+        } else if let Some(gd) = self.command_map.get(command) {
             self.is_executing = true;
             let gd = gd.clone();
 
@@ -318,9 +366,6 @@ impl Shell {
                 ShExecuteStatus::Done => self.crlf_prompt(),
                 ShExecuteStatus::Running => self.running_command = Some(gd),
             }
-        } else if let Some(icm) = self.internal_command_map.get_mut(command) {
-            self.is_executing = true;
-            icm.start(params);
         } else {
             self.is_executing = false;
             let send_back = if data.is_empty() {

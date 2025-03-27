@@ -8,6 +8,7 @@ pub enum IpcEvent {
     Exit,
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
+    HostNameChanged([u8; IPC_DATA_SIZE], usize),
     SendData([u8; IPC_DATA_SIZE], usize),
 }
 
@@ -34,6 +35,28 @@ impl IpcEvent {
         }
 
         events
+    }
+
+    /// Pack string to [`IpcEvent::HostNameChanged`]
+    pub fn pack_host_name(host_name: &str) -> IpcEvent {
+        if host_name.len() > IPC_DATA_SIZE {
+            panic!("[IpcEvent::pack_host_name] host name is too long, max length is {}", IPC_DATA_SIZE);
+        }
+
+        let bytes = host_name.as_bytes();
+        let start = 0;
+
+        let mut end = (start + IPC_DATA_SIZE).min(bytes.len());
+
+        while end > start && !host_name.is_char_boundary(end) {
+            end -= 1;
+        }
+
+        let chunk = &bytes[start..end];
+        let mut array = [0u8; IPC_DATA_SIZE];
+        array[..chunk.len()].copy_from_slice(chunk);
+
+        IpcEvent::HostNameChanged(array, chunk.len())
     }
 }
 

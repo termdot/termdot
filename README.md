@@ -15,6 +15,7 @@ Supports control characters and escape sequences of XTerm, VT102.
 ## Features
 
 - Terminal-style command execution within Godot.
+- Commands history cache, auto command completion.
 - Supports formatted text output with ANSI-style escape sequences.
 - Enables command scripting with execution status handling.
 - Designed for extensibility and integration into existing projects.
@@ -55,6 +56,14 @@ func _running() -> int:
     # ExecuteStatus.DONE
     # ExecuteStatus.RUNNING
 ```
+
+## Internal Commands
+
+| Key/Command | Function                        |
+| ----------- | ------------------------------- |
+| ↑ / ↓       | History commands select.        |
+| Tab         | Commands list, auto completion. |
+| cls         | Clear entire screen.            |
 
 ## License
 

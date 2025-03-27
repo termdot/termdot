@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{IPC_DATA_SIZE, MEM_QUEUE_MASTER, MEM_QUEUE_SLAVE, MEM_SIGNAL, ipc_event::IpcEvent};
-use godot::global::{godot_error, godot_print};
+use godot::global::godot_error;
 use log::error;
 use tmui::tipc::{
     mem::{
@@ -134,7 +134,6 @@ impl Drop for IpcContext {
         match self.role {
             ContextRole::Master => {
                 self.wait_signaled(Timeout::Val(Duration::from_secs(1)));
-                godot_print!("Master IpcContext drop.");
             }
             ContextRole::Slave => self.signaled(),
         }

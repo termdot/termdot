@@ -1,6 +1,6 @@
 use crate::{command::Command, shell::Shell};
 use godot::{
-    classes::{ProjectSettings, notify::NodeNotification},
+    classes::{InputEvent, ProjectSettings, notify::NodeNotification},
     prelude::*,
 };
 use ipc::{
@@ -74,22 +74,14 @@ impl INode for Termdot {
 
         self.shell.set_prompt(&self.host_name);
 
-        let path = ProjectSettings::singleton()
-            .globalize_path(APP_PATH)
-            .to_string();
-        match std::process::Command::new(path).arg(id.to_string()).spawn() {
-            Ok(c) => self.child = Some(c),
-            Err(e) => godot_error!("Run external app failed, e = {:?}", e),
-        }
-
-        if let Some(ipc_ctx) = self.ipc_context.as_ref() {
-            if let Err(e) = ipc_ctx.try_send(IpcEvent::Ready) {
-                godot_error!("[Termdot::process] Send ipc event failed, e = {:?}", e);
-            }
+        if self.auto_run {
+            self.start_sub_process();
         }
     }
 
     fn process(&mut self, _delta: f64) {
+        self.shell.process_running_command();
+
         if self.ipc_context.is_none() {
             return;
         }
@@ -97,20 +89,31 @@ impl INode for Termdot {
         while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
             match evt {
                 IpcEvent::Ready => self.shell.prompt(),
-                IpcEvent::Exit => {}
+                IpcEvent::Exit => {
+                    self.child = None;
+                    self.shell.reset();
+                }
                 IpcEvent::SetTerminalSize(cols, rows) => {
                     self.shell.set_terminal_size(cols, rows);
                 }
                 IpcEvent::SendData(data, len) => self.recv_data(&data, len),
+
+                _ => {}
             }
         }
-
-        self.shell.process_running_command();
 
         let ipc_context = self.ipc_context.as_ref().unwrap();
         while let Some(echo) = self.shell.next_echo() {
             if let Err(e) = ipc_context.try_send(echo) {
                 godot_error!("[Termdot::process] Send echo failed, e = {:?}", e);
+            }
+        }
+    }
+
+    fn input(&mut self, event: Gd<InputEvent>) {
+        if event.is_action_pressed(&self.run_action.to_string()) {
+            if self.child.is_none() {
+                self.start_sub_process();
             }
         }
     }
@@ -161,5 +164,31 @@ impl Termdot {
             let _ = ctx.try_send(IpcEvent::Exit);
         }
         self.ipc_context = None;
+
+        if let Some(child) = self.child.as_mut() {
+            let _ = child.kill();
+        }
+    }
+
+    fn start_sub_process(&mut self) {
+        let id = SHARED_ID.load(std::sync::atomic::Ordering::Relaxed);
+        let path = ProjectSettings::singleton()
+            .globalize_path(APP_PATH)
+            .to_string();
+        match std::process::Command::new(path).arg(id.to_string()).spawn() {
+            Ok(c) => self.child = Some(c),
+            Err(e) => godot_error!("Run external app failed, e = {:?}", e),
+        }
+
+        self.send_ipc_event(IpcEvent::Ready);
+        self.send_ipc_event(IpcEvent::pack_host_name(&self.host_name.to_string()));
+    }
+
+    fn send_ipc_event(&self, event: IpcEvent) {
+        if let Some(ipc_ctx) = self.ipc_context.as_ref() {
+            if let Err(e) = ipc_ctx.try_send(event) {
+                godot_error!("[Termdot::process] Send ipc event failed, e = {:?}", e);
+            }
+        }
     }
 }

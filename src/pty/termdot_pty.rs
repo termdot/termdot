@@ -114,10 +114,28 @@ impl Pty for TermdotPty {
                     data.truncate(len);
                     return data;
                 }
+                IpcEvent::HostNameChanged(data, len) => {
+                    let mut data = data.to_vec();
+                    data.truncate(len);
+                    let data = match String::from_utf8(data) {
+                        Ok(d) => d,
+                        Err(e) => {
+                            panic!(
+                                "[Termdot::recv_data] Parse utf-8 string failed, err = {:?}",
+                                e
+                            );
+                        }
+                    };
+                    EventBus::push(Events::TitleChanged(data));
+                }
             }
         }
 
         vec![]
+    }
+
+    fn on_window_closed(&mut self) {
+        self.send_ipc_data(IpcEvent::Exit);
     }
 }
 

@@ -106,7 +106,7 @@ impl SessionTab {
 impl EventHandle for SessionTab {
     #[inline]
     fn listen(&self) -> Vec<EventType> {
-        vec![EventType::MasterReady]
+        vec![EventType::MasterReady, EventType::TitleChanged]
     }
 
     #[inline]
@@ -114,6 +114,9 @@ impl EventHandle for SessionTab {
         match evt {
             Events::MasterReay => {
                 self.set_session_alive(true);
+            }
+            Events::TitleChanged(title) => {
+                self.session_label.set_text(title);
             }
             _ => {}
         }

@@ -80,7 +80,8 @@ impl ShAnsiString {
         self.builder.len() == 0
     }
 
-    pub fn foreground_256(&mut self, color: i16) -> &mut Self {
+    #[inline]
+    pub fn foreground_256(mut self, color: i16) -> Self {
         if !check_range(&color) {
             return self;
         }
@@ -91,7 +92,8 @@ impl ShAnsiString {
         self
     }
 
-    pub fn background_256(&mut self, color: i16) -> &mut Self {
+    #[inline]
+    pub fn background_256(mut self, color: i16) -> Self {
         if !check_range(&color) {
             return self;
         }
@@ -102,7 +104,8 @@ impl ShAnsiString {
         self
     }
 
-    pub fn foreground_rgb(&mut self, r: i16, g: i16, b: i16) -> &mut Self {
+    #[inline]
+    pub fn foreground_rgb(mut self, r: i16, g: i16, b: i16) -> Self {
         if !check_range(&r) || !check_range(&g) || !check_range(&b) {
             return self;
         }
@@ -113,7 +116,8 @@ impl ShAnsiString {
         self
     }
 
-    pub fn background_rgb(&mut self, r: i16, g: i16, b: i16) -> &mut Self {
+    #[inline]
+    pub fn background_rgb(mut self, r: i16, g: i16, b: i16) -> Self {
         if !check_range(&r) || !check_range(&g) || !check_range(&b) {
             return self;
         }
@@ -124,7 +128,8 @@ impl ShAnsiString {
         self
     }
 
-    fn de_foreground(&mut self) -> &mut Self {
+    #[inline]
+    fn de_foreground(mut self) -> Self {
         self.fg_256 = -1;
         self.fg_r = -1;
         self.fg_g = -1;
@@ -132,7 +137,8 @@ impl ShAnsiString {
         self
     }
 
-    fn de_background(&mut self) -> &mut Self {
+    #[inline]
+    fn de_background(mut self) -> Self {
         self.bg_256 = -1;
         self.bg_r = -1;
         self.bg_g = -1;
@@ -140,11 +146,13 @@ impl ShAnsiString {
         self
     }
 
-    pub fn clear_style(&mut self) -> &mut Self {
+    #[inline]
+    pub fn clear_style(mut self) -> Self {
         self.builder.push_str(ESC0M);
         self.de_background().de_foreground()
     }
 
+    #[inline]
     fn fill_color(&self, str: &str) -> String {
         let mut filled = String::from(str);
         if self.fg_256 != -1 {
@@ -162,7 +170,8 @@ impl ShAnsiString {
         filled
     }
 
-    pub fn append(&mut self, str: &str) -> &mut Self {
+    #[inline]
+    pub fn append(mut self, str: &str) -> Self {
         if str.is_empty() {
             return self;
         }
@@ -170,153 +179,171 @@ impl ShAnsiString {
         self
     }
 
-    pub fn cursor_move_to(&mut self, line: i32, column: i32) -> &mut Self {
+    #[inline]
+    pub fn cursor_move_to(mut self, line: i32, column: i32) -> Self {
         let changed = CursorPositionHelper::cursor_move(line, column);
         self.builder.push_str(changed.as_str());
         self
     }
 
-    pub fn append_char(&mut self, ch: char) -> &mut Self {
-        self.append(ch.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_char(self, ch: char) -> Self {
+        self.append(ch.to_string().as_str())
     }
 
-    pub fn append_i8(&mut self, val: i8) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_i8(self, val: i8) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_u8(&mut self, val: u8) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_u8(self, val: u8) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_i16(&mut self, val: i16) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_i16(self, val: i16) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_u16(&mut self, val: u16) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_u16(self, val: u16) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_i32(&mut self, val: i32) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_i32(self, val: i32) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_u32(&mut self, val: u32) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_u32(self, val: u32) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_i64(&mut self, val: i64) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_i64(self, val: i64) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_u64(&mut self, val: u64) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_u64(self, val: u64) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_f32(&mut self, val: f32) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_f32(self, val: f32) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_f64(&mut self, val: f64) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_f64(self, val: f64) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn append_bool(&mut self, val: bool) -> &mut Self {
-        self.append(val.to_string().as_str());
-        self
+    #[inline]
+    pub fn append_bool(self, val: bool) -> Self {
+        self.append(val.to_string().as_str())
     }
 
-    pub fn bold(&mut self) -> &mut Self {
+    #[inline]
+    pub fn bold(mut self) -> Self {
         self.builder.push_str(ESC1M);
         self
     }
 
-    pub fn de_bold(&mut self) -> &mut Self {
+    #[inline]
+    pub fn de_bold(mut self) -> Self {
         self.builder.push_str(ESC22M);
         self
     }
 
-    pub fn italic(&mut self) -> &mut Self {
+    #[inline]
+    pub fn italic(mut self) -> Self {
         self.builder.push_str(ESC3M);
         self
     }
 
-    pub fn de_italic(&mut self) -> &mut Self {
+    #[inline]
+    pub fn de_italic(mut self) -> Self {
         self.builder.push_str(ESC23M);
         self
     }
 
-    pub fn underline(&mut self) -> &mut Self {
+    #[inline]
+    pub fn underline(mut self) -> Self {
         self.builder.push_str(ESC4M);
         self
     }
 
-    pub fn de_underline(&mut self) -> &mut Self {
+    #[inline]
+    pub fn de_underline(mut self) -> Self {
         self.builder.push_str(ESC24M);
         self
     }
 
-    pub fn blinking(&mut self) -> &mut Self {
+    #[inline]
+    pub fn blinking(mut self) -> Self {
         self.builder.push_str(ESC5M);
         self
     }
 
-    pub fn de_blinking(&mut self) -> &mut Self {
+    #[inline]
+    pub fn de_blinking(mut self) -> Self {
         self.builder.push_str(ESC25M);
         self
     }
 
-    pub fn strikethrough(&mut self) -> &mut Self {
+    #[inline]
+    pub fn strikethrough(mut self) -> Self {
         self.builder.push_str(ESC9M);
         self
     }
 
-    pub fn de_strikethrough(&mut self) -> &mut Self {
+    #[inline]
+    pub fn de_strikethrough(mut self) -> Self {
         self.builder.push_str(ESC29M);
         self
     }
 
-    pub fn save_cursor_position(&mut self) -> &mut Self {
+    #[inline]
+    pub fn save_cursor_position(mut self) -> Self {
         self.builder.push_str(ESCS);
         self
     }
 
-    pub fn restore_cursor_position(&mut self) -> &mut Self {
+    #[inline]
+    pub fn restore_cursor_position(mut self) -> Self {
         self.builder.push_str(ESCU);
         self
     }
 
-    pub fn crlf(&mut self) -> &mut Self {
+    #[inline]
+    pub fn crlf(mut self) -> Self {
         self.builder.push_str(CRLF);
         self
     }
 
-    pub fn tab(&mut self) -> &mut Self {
+    #[inline]
+    pub fn tab(mut self) -> Self {
         self.builder.push_str(TAB);
         self
     }
 
-    pub fn space(&mut self) -> &mut Self {
+    #[inline]
+    pub fn space(mut self) -> Self {
         self.builder.push_str(SPACE);
         self
     }
 
-    pub fn space_in(&mut self, cnt: usize) -> &mut Self {
+    #[inline]
+    pub fn space_in(mut self, cnt: usize) -> Self {
         self.builder.push_str(SPACE.repeat(cnt).as_str());
         self
     }
 
-    pub fn clear_str(&mut self) -> &mut Self {
+    #[inline]
+    pub fn clear_str(mut self) -> Self {
         self.builder.clear();
         self
     }
@@ -359,9 +386,7 @@ mod tests {
 
     #[test]
     fn test_ansi_string() {
-        let mut ansi_str = ShAnsiString::new();
-
-        ansi_str
+        let ansi_str = ShAnsiString::new()
             .foreground_256(15)
             .background_rgb(112, 112, 112)
             .italic()
