@@ -1,9 +1,6 @@
 pub mod cls;
 
-use crate::{
-    shell::{SHELL, Shell},
-    utils::ansi_string::rust::ShAnsiString,
-};
+use crate::{shell::SHELL, utils::ansi_string::rust::ShAnsiString};
 use godot::builtin::{Array, GString, Vector2i};
 use tmui::tlib::nonnull_mut;
 
@@ -39,10 +36,5 @@ pub trait IInternalCommand {
     #[inline]
     fn echo(&self, text: ShAnsiString) {
         SHELL.with(|rf| nonnull_mut!(rf.borrow_mut()).sh_echo(text))
-    }
-
-    #[inline]
-    fn shell(&self) -> &mut Shell {
-        SHELL.with(|rf| nonnull_mut!(rf.borrow_mut()))
     }
 }

@@ -114,10 +114,9 @@ impl INode for Termdot {
         let input_map = InputMap::singleton();
         if input_map.has_action(&self.run_action.to_string())
             && event.is_action_pressed(&self.run_action.to_string())
+            && self.child.is_none()
         {
-            if self.child.is_none() {
-                self.start_sub_process();
-            }
+            self.start_sub_process();
         }
     }
 

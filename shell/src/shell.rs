@@ -23,7 +23,7 @@ use wchar::{wch, wchar_t};
 use widestring::WideString;
 
 thread_local! {
-    pub static SHELL: RefCell<Option<NonNull<Shell>>> = RefCell::new(None);
+    pub static SHELL: RefCell<Option<NonNull<Shell>>> = const { RefCell::new(None) };
 }
 
 #[derive(Derivative)]
@@ -303,7 +303,7 @@ impl Shell {
                     self.buffer.remove(self.cursor);
 
                     let (row, col) = self.cursor_to_position();
-                    let echo = format!("\x1B[{};{}H\x1BK", row, col);
+                    let echo = format!("\x1B[{};{}H\x1B[K", row, col);
                     self.echos.extend(IpcEvent::pack_data(&echo));
 
                     Some(c)
@@ -318,7 +318,9 @@ impl Shell {
             CTL_SIGINT => None,
             CTL_CARRIAGE_RETURN => {
                 let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
-                self.u_stack.push(self.buffer.clone());
+                if !self.buffer.is_empty() {
+                    self.u_stack.push(self.buffer.clone());
+                }
                 self.buffer.clear();
                 self.cursor = 0;
 
@@ -399,7 +401,7 @@ impl Shell {
         } else {
             self.is_executing = false;
             let send_back = if data.is_empty() {
-                format!("{}", self.prompt)
+                self.prompt.to_string()
             } else {
                 format!(
                     "`{}` is not recognized as an internal or external command.\r\n{}",

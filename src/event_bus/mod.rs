@@ -25,6 +25,7 @@ pub struct EventBus {
 }
 
 impl EventBus {
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn register(handle: *mut dyn EventHandle) {
         EVENT_BUS.with(|rf| {
             let mut event_bus = rf.borrow_mut();
