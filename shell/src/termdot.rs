@@ -1,6 +1,6 @@
 use crate::{command::Command, shell::Shell};
 use godot::{
-    classes::{InputEvent, ProjectSettings, notify::NodeNotification},
+    classes::{InputEvent, InputMap, ProjectSettings, notify::NodeNotification},
     prelude::*,
 };
 use ipc::{
@@ -111,7 +111,10 @@ impl INode for Termdot {
     }
 
     fn input(&mut self, event: Gd<InputEvent>) {
-        if event.is_action_pressed(&self.run_action.to_string()) {
+        let input_map = InputMap::singleton();
+        if input_map.has_action(&self.run_action.to_string())
+            && event.is_action_pressed(&self.run_action.to_string())
+        {
             if self.child.is_none() {
                 self.start_sub_process();
             }

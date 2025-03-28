@@ -57,13 +57,17 @@ func _running() -> int:
     # ExecuteStatus.RUNNING
 ```
 
-## Internal Commands
+## Builtin Functions
 
-| Key/Command | Function                        |
-| ----------- | ------------------------------- |
-| ↑ / ↓       | History commands select.        |
-| Tab         | Commands list, auto completion. |
-| cls         | Clear entire screen.            |
+| Key         | Function                           |
+| ----------- | ---------------------------------- |
+| ↑ / ↓       | History commands select.           |
+| Tab         | Commands list, auto completion.    |
+| Control + C | Interrupt current running command. |
+
+| Command | Function             |
+| ------- | -------------------- |
+| cls     | Clear entire screen. |
 
 ## License
 

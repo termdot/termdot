@@ -196,6 +196,7 @@ impl Shell {
                     self.cursor = 0;
                     self.emulation.receive_char(wch!(';'));
                     self.map_set_cursor();
+                    self.report_cursor();
                     None
                 } else {
                     self.extend(c);
@@ -207,6 +208,7 @@ impl Shell {
                     self.cursor = self.buffer.len();
                     self.emulation.receive_char(wch!(';'));
                     self.map_set_cursor();
+                    self.report_cursor();
                     None
                 } else {
                     self.extend(c);
@@ -217,6 +219,7 @@ impl Shell {
                 if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
                     if self.cursor != 0 {
                         self.cursor -= 1;
+                        self.report_cursor();
                         Some(c)
                     } else {
                         self.emulation.receive_char(wch!(';'));
@@ -232,6 +235,7 @@ impl Shell {
                 if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
                     if self.cursor < self.buffer.len() {
                         self.cursor += 1;
+                        self.report_cursor();
                         Some(c)
                     } else {
                         self.emulation.receive_char(wch!(';'));
@@ -252,7 +256,11 @@ impl Shell {
                         self.buffer = u_pop;
                         self.cursor = self.buffer.len();
 
-                        for &c in self.replay_text().as_slice() {
+                        let replay_text = self.replay_text();
+                        self.echos
+                            .extend(IpcEvent::pack_data(&replay_text.to_string_lossy()));
+
+                        for &c in replay_text.as_slice() {
                             self.emulation.receive_char(c);
                         }
                     }
@@ -273,7 +281,11 @@ impl Shell {
                         self.buffer = d_pop;
                         self.cursor = self.buffer.len();
 
-                        for &c in self.replay_text().as_slice() {
+                        let replay_text = self.replay_text();
+                        self.echos
+                            .extend(IpcEvent::pack_data(&replay_text.to_string_lossy()));
+
+                        for &c in replay_text.as_slice() {
                             self.emulation.receive_char(c);
                         }
                     }
@@ -289,6 +301,11 @@ impl Shell {
                 if self.cursor != 0 {
                     self.cursor -= 1;
                     self.buffer.remove(self.cursor);
+
+                    let (row, col) = self.cursor_to_position();
+                    let echo = format!("\x1B[{};{}H\x1BK", row, col);
+                    self.echos.extend(IpcEvent::pack_data(&echo));
+
                     Some(c)
                 } else {
                     None
@@ -333,6 +350,19 @@ impl Shell {
     fn extend(&mut self, c: wchar_t) {
         self.buffer.insert(self.cursor, c);
         self.cursor += 1;
+
+        if self.cursor == self.buffer.len() {
+            let c = WideString::from_vec(vec![c]).to_string_lossy();
+            self.echos.extend(IpcEvent::pack_data(&c));
+        } else {
+            let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+            let (row, col) = self.cursor_to_position();
+            let echo = format!(
+                "\x1B[{};{}H\x1B[K{}\x1B[{};{}H",
+                self.cursor_origin.y, self.cursor_origin.x, data, row, col
+            );
+            self.echos.extend(IpcEvent::pack_data(&echo));
+        }
     }
 
     fn execute_command(&mut self, data: &str) {
@@ -395,6 +425,12 @@ impl Shell {
         self.argv[1] = 0;
     }
 
+    fn report_cursor(&mut self) {
+        let (row, col) = self.cursor_to_position();
+        let echo = format!("\x1B[{};{}H", row, col);
+        self.echos.extend(IpcEvent::pack_data(&echo));
+    }
+
     fn replay_text(&self) -> WideString {
         let cursor_origin = self.cursor_origin;
         let text = format!("\x1B[{};{}H\x1B[K", cursor_origin.y, cursor_origin.x,);
@@ -438,8 +474,7 @@ impl Shell {
                 prompt = true;
             }
         } else if input.len() != self.cursor {
-            let cursor_origin = self.cursor_origin;
-            echo.push_str(&format!("\x1B[{};{}H", cursor_origin.y, cursor_origin.x));
+            // Do nothing
         } else {
             let mut commands: Vec<&str> = self
                 .command_map
@@ -484,12 +519,18 @@ impl Shell {
             for &c in wstr.as_slice() {
                 self.emulation.receive_char(c);
             }
+
             if prompt {
                 self.cursor_origin = self.get_cursor_position();
 
-                // [`LocalDisplay`](termio::emulator::emulation::local_display::LocalDisplay)
-                // will cache the input text automatically and replay it when detected \u{200B},
-                // so just handle the input on shell side.
+                if input.is_empty() {
+                    return;
+                }
+
+                for e in IpcEvent::pack_data(&input) {
+                    self.echos.push_back(e);
+                }
+
                 let wstr = WideString::from_str(&input);
                 for &c in wstr.as_slice() {
                     self.emulation.receive_char(c);

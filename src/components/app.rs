@@ -41,7 +41,6 @@ impl WidgetImpl for App {
         if let Some(w) = win.find_id_mut(TerminalEmulator::id()) {
             let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
             emulator.start_custom_session(ID, TermdotPty::new());
-            emulator.set_use_local_display(ID, true);
         }
     }
 }
