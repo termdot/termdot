@@ -59,11 +59,13 @@ func _running() -> int:
 
 ## Builtin Functions
 
-| Key         | Function                           |
-| ----------- | ---------------------------------- |
-| ↑ / ↓       | History commands select.           |
-| Tab         | Commands list, auto completion.    |
-| Control + C | Interrupt current running command. |
+| Key              | Function                                       |
+| ---------------- | ---------------------------------------------- |
+| ↑ / ↓            | History commands select.                       |
+| Tab              | Commands list, auto completion.                |
+| Control + C      | Interrupt current running command.             |
+| Control + Insert | Copy selected text to clipboard from terminal. |
+| Shift + Insert   | Paste text from clipboard to terminal.         |
 
 | Command | Function             |
 | ------- | -------------------- |

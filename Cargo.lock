@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "rust-embed",
 ]
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "lazy_static",
  "libs",
@@ -877,7 +877,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "bitvec",
  "cli",
@@ -1799,7 +1799,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "asset",
  "chrono",
@@ -2192,9 +2192,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.21.1"
+version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
+checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "oorandom"
@@ -2313,7 +2313,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "asset",
  "cli",
@@ -3239,7 +3239,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#6f8d36ba7c017c9694f6059b15cb76c40991dc8d"
+source = "git+https://github.com/toocol/termio#acd0666e88a03ddbeb1b24771f20752123638ad9"
 dependencies = [
  "cli",
  "emulator",

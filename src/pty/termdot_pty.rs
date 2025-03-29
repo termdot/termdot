@@ -107,6 +107,7 @@ impl Pty for TermdotPty {
                 IpcEvent::Exit => {
                     self.running = false;
                     self.ipc_context = None;
+                    ApplicationWindow::window().close();
                 }
                 IpcEvent::SetTerminalSize(_, _) => {}
                 IpcEvent::SendData(data, len) => {
