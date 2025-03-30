@@ -46,7 +46,7 @@ impl ObjectImpl for WinControlButtons {
         let background = self.background();
 
         self.minimize.width_request(45);
-        self.minimize.height_request(TITLE_BAR_HEIGHT);
+        self.minimize.height_request(TITLE_BAR_HEIGHT - 1);
         self.minimize
             .register_mouse_enter(|w| w.set_background(CTL_BTN_GREY));
         self.minimize
@@ -55,7 +55,7 @@ impl ObjectImpl for WinControlButtons {
             .register_mouse_released(|w, _| w.window().minimize());
 
         self.maximize_restore.width_request(45);
-        self.maximize_restore.height_request(TITLE_BAR_HEIGHT);
+        self.maximize_restore.height_request(TITLE_BAR_HEIGHT - 1);
         self.maximize_restore
             .register_mouse_enter(|w| w.set_background(CTL_BTN_GREY));
         self.maximize_restore
@@ -80,7 +80,7 @@ impl ObjectImpl for WinControlButtons {
         });
 
         self.close.width_request(45);
-        self.close.height_request(TITLE_BAR_HEIGHT);
+        self.close.height_request(TITLE_BAR_HEIGHT - 1);
         self.close
             .register_mouse_enter(|w| w.set_background(CTL_BTN_RED));
         self.close
