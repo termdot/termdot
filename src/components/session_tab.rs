@@ -1,12 +1,9 @@
-use crate::event_bus::{
-    event_handle::EventHandle,
-    events::{EventType, Events}, EventBus,
-};
+use crate::events::{EventBus, EventType, Events};
 
 use super::color_table::{
     SESSION_ALIVE_COLOR, SESSION_DEAD_COLOR, TERMINAL_BACKGROUND, TERMINAL_FOREGROUND,
 };
-use tlib::skia_safe::Path;
+use tlib::{event_bus::event_handle::EventHandle, skia_safe::Path};
 use tmui::{
     graphics::box_shadow::{BoxShadow, ShadowSide},
     label::Label,
@@ -104,6 +101,9 @@ impl SessionTab {
 }
 
 impl EventHandle for SessionTab {
+    type EventType = EventType;
+    type Event = Events;
+
     #[inline]
     fn listen(&self) -> Vec<EventType> {
         vec![EventType::MasterReady, EventType::TitleChanged]

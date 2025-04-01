@@ -1,3 +1,4 @@
+use crate::events::{EventBus, Events};
 use ipc::{ipc_context::IpcContext, ipc_event::IpcEvent};
 use std::path::PathBuf;
 use termio::{
@@ -6,8 +7,6 @@ use termio::{
 };
 use tlib::{log::error, object::ObjectSubclass};
 use tmui::prelude::*;
-
-use crate::event_bus::{events::Events, EventBus};
 
 #[extends(Object)]
 pub struct TermdotPty {
@@ -103,6 +102,7 @@ impl Pty for TermdotPty {
 
         if let Some(evt) = ctx.try_recv() {
             match evt {
+                IpcEvent::HeartBeat => {}
                 IpcEvent::Ready => EventBus::push(Events::MasterReay),
                 IpcEvent::Exit => {
                     self.running = false;

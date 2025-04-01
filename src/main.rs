@@ -1,7 +1,7 @@
 #![windows_subsystem = "windows"]
 pub mod assets;
 pub mod components;
-pub mod event_bus;
+pub mod events;
 pub mod pty;
 
 use components::{app::App, color_table::APP_BACKGROUND};
@@ -24,7 +24,7 @@ fn main() {
     let app = Application::builder()
         .width(1020)
         .height(600)
-        .resizable(false)
+        .min_size((400, 200))
         .title("Termdot")
         .transparent(true)
         .defer_display(true)

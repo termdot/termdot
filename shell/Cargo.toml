@@ -3,8 +3,13 @@ name = "shell"
 version = "0.1.0"
 edition = "2024"
 
+build = "build.rs"
+
 [lib]
 crate-type = ["cdylib"]
+
+[build-dependencies]
+cfg_aliases = "0.2.0"
 
 [dependencies]
 godot = { workspace = true }

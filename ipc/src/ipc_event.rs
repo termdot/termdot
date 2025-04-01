@@ -4,6 +4,7 @@ use crate::IPC_DATA_SIZE;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::large_enum_variant)]
 pub enum IpcEvent {
+    HeartBeat,
     Ready,
     Exit,
     /// (Cols, Rows)
@@ -40,7 +41,10 @@ impl IpcEvent {
     /// Pack string to [`IpcEvent::HostNameChanged`]
     pub fn pack_host_name(host_name: &str) -> IpcEvent {
         if host_name.len() > IPC_DATA_SIZE {
-            panic!("[IpcEvent::pack_host_name] host name is too long, max length is {}", IPC_DATA_SIZE);
+            panic!(
+                "[IpcEvent::pack_host_name] host name is too long, max length is {}",
+                IPC_DATA_SIZE
+            );
         }
 
         let bytes = host_name.as_bytes();

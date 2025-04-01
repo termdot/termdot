@@ -1,5 +1,5 @@
 use super::title_bar::TitleBar;
-use crate::{event_bus::EventBus, pty::termdot_pty::TermdotPty};
+use crate::{events::EventBus, pty::termdot_pty::TermdotPty};
 use termio::{cli::session::SessionPropsId, emulator::core::terminal_emulator::TerminalEmulator};
 use tlib::{global_watch, iter_executor, run_after};
 use tmui::{
@@ -227,14 +227,30 @@ impl GlobalWatchImpl for App {
         let bottom = pos.y() >= rect.bottom() - 3 && pos.y() <= rect.bottom() + 3;
 
         if left_top || right_top || right_bottom || left_bottom || left || right || top || bottom {
-            if left_top || right_bottom {
+            if left_top {
                 self.set_cursor_shape(SystemCursorShape::SizeFDiagCursor);
-            } else if right_top || left_bottom {
+                self.resize_direction = ResizeDirection::LeftTop;
+            } else if right_bottom {
+                self.set_cursor_shape(SystemCursorShape::SizeFDiagCursor);
+                self.resize_direction = ResizeDirection::RightBottom;
+            } else if right_top {
                 self.set_cursor_shape(SystemCursorShape::SizeBDiagCursor);
-            } else if left || right {
+                self.resize_direction = ResizeDirection::RightTop;
+            } else if left_bottom {
+                self.set_cursor_shape(SystemCursorShape::SizeBDiagCursor);
+                self.resize_direction = ResizeDirection::LeftBottom;
+            } else if left {
                 self.set_cursor_shape(SystemCursorShape::SizeHorCursor);
-            } else if top || bottom {
+                self.resize_direction = ResizeDirection::Left;
+            } else if right {
+                self.set_cursor_shape(SystemCursorShape::SizeHorCursor);
+                self.resize_direction = ResizeDirection::Right;
+            } else if top {
                 self.set_cursor_shape(SystemCursorShape::SizeVerCursor);
+                self.resize_direction = ResizeDirection::Top;
+            } else if bottom {
+                self.set_cursor_shape(SystemCursorShape::SizeVerCursor);
+                self.resize_direction = ResizeDirection::Bottom;
             }
             self.resize_zone = true;
         } else if self.resize_zone && !self.resize_pressed {
@@ -269,7 +285,7 @@ enum ResizeDirection {
 impl IterExecutor for App {
     #[inline]
     fn iter_execute(&mut self) {
-        EventBus::process_deferred_evts();
+        EventBus::process();
     }
 }
 

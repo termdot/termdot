@@ -12,8 +12,12 @@ use std::{process::Child, str::FromStr};
 use tmui::tlib::utils::SnowflakeGuidGenerator;
 use widestring::WideString;
 
-#[cfg(target_os = "windows")]
+#[cfg(windows_platform)]
 pub const APP_PATH: &str = "res://addons/termdot/termdot.exe";
+#[cfg(macos_platform)]
+pub const APP_PATH: &str = "";
+#[cfg(free_unix)]
+pub const APP_PATH: &str = "";
 
 #[derive(GodotClass)]
 /// Main Godot node for plugin status management, and interactive with users.
@@ -88,6 +92,7 @@ impl INode for Termdot {
 
         while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
             match evt {
+                IpcEvent::HeartBeat => {}
                 IpcEvent::Ready => self.shell.prompt(),
                 IpcEvent::Exit => {
                     self.child = None;
