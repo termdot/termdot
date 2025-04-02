@@ -10,7 +10,9 @@ Terminal style external command executor for Godot.
 
 Supports control characters and escape sequences of XTerm, VT102.
 
-![Termdot Image](src/resources/termdot.png)
+![Termdot Display](src/resources/termdot_display.gif)
+
+<!-- ![Termdot Image](src/resources/termdot.png) -->
 
 ## Features
 
@@ -19,6 +21,7 @@ Supports control characters and escape sequences of XTerm, VT102.
 - Supports formatted text output with ANSI-style escape sequences.
 - Enables command scripting with execution status handling.
 - Designed for extensibility and integration into existing projects.
+- Additional log output viewing window.
 
 ## Usage
 
@@ -67,9 +70,11 @@ func _running() -> int:
 | Control + Insert | Copy selected text to clipboard from terminal. |
 | Shift + Insert   | Paste text from clipboard to terminal.         |
 
-| Command | Function             |
-| ------- | -------------------- |
-| cls     | Clear entire screen. |
+| Command | Function                                                                    |
+| ------- | --------------------------------------------------------------------------- |
+| version | Show current Termdot version.                                               |
+| cls     | Clear entire screen.                                                        |
+| log     | Display logs recorded by Termdot.log(), Termdot.warn(), and Termdot.error() |
 
 ## License
 

@@ -1,11 +1,7 @@
-use std::{
-    sync::atomic::{AtomicU64, Ordering},
-    time::Duration,
-};
-
 use crate::{IPC_DATA_SIZE, MEM_QUEUE_MASTER, MEM_QUEUE_SLAVE, MEM_SIGNAL, ipc_event::IpcEvent};
 use godot::global::godot_error;
 use log::error;
+use std::sync::atomic::{AtomicU64, Ordering};
 use tmui::tipc::{
     mem::{
         BuildType,
@@ -110,7 +106,7 @@ impl IpcContext {
     }
 
     #[inline]
-    fn wait_signaled(&self, timeout: Timeout) {
+    pub fn wait_signaled(&self, timeout: Timeout) {
         if let Ok((evt, _)) = unsafe { Event::new(self.signal.as_ptr(), true) } {
             if let Err(e) = evt.wait(timeout) {
                 godot_error!("[IpcContext::wait_signaled] Error occurred, {:?}", e)
@@ -119,23 +115,11 @@ impl IpcContext {
     }
 
     #[inline]
-    fn signaled(&self) {
+    pub fn signaled(&self) {
         if let Ok((evt, _)) = unsafe { Event::from_existing(self.signal.as_ptr()) } {
             if let Err(e) = evt.set(EventState::Signaled) {
                 error!("[IpcContext::signaled] Error occurred, {:?}", e)
             }
-        }
-    }
-}
-
-impl Drop for IpcContext {
-    #[inline]
-    fn drop(&mut self) {
-        match self.role {
-            ContextRole::Master => {
-                self.wait_signaled(Timeout::Val(Duration::from_secs(1)));
-            }
-            ContextRole::Slave => self.signaled(),
         }
     }
 }

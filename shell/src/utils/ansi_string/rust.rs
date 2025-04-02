@@ -31,15 +31,15 @@ use crate::utils::escape_sequence::*;
 /// println!("{}", ansi_string.as_str());
 /// ```
 pub struct ShAnsiString {
-    builder: String,
-    bg_256: i16,
-    fg_256: i16,
-    bg_r: i16,
-    bg_g: i16,
-    bg_b: i16,
-    fg_r: i16,
-    fg_g: i16,
-    fg_b: i16,
+    pub(crate) builder: String,
+    pub(crate) bg_256: i16,
+    pub(crate) fg_256: i16,
+    pub(crate) bg_r: i16,
+    pub(crate) bg_g: i16,
+    pub(crate) bg_b: i16,
+    pub(crate) fg_r: i16,
+    pub(crate) fg_g: i16,
+    pub(crate) fg_b: i16,
 }
 
 impl Default for ShAnsiString {
@@ -339,6 +339,24 @@ impl ShAnsiString {
     #[inline]
     pub fn space_in(mut self, cnt: usize) -> Self {
         self.builder.push_str(SPACE.repeat(cnt).as_str());
+        self
+    }
+
+    #[inline]
+    pub fn clear_cursor_to_end(mut self) -> Self {
+        self.builder.push_str(ESC0K);
+        self
+    }
+
+    #[inline]
+    pub fn clear_cursor_to_start(mut self) -> Self {
+        self.builder.push_str(ESC1K);
+        self
+    }
+
+    #[inline]
+    pub fn clear_line(mut self) -> Self {
+        self.builder.push_str(ESC2K);
         self
     }
 

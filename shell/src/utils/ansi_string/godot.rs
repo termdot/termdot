@@ -5,24 +5,35 @@ use crate::utils::charmap::*;
 use crate::utils::escape_sequence::*;
 use godot::prelude::*;
 
+use super::rust::ShAnsiString;
+
+#[derive(GodotClass)]
+#[class(init, base = Node)]
 /// Building syled string texts with [Ansi Escape Code Sequence](https://gist.github.com/Joezeo/ce688cf42636376650ead73266256336) for terminal.  
 ///
 /// ### Functions:
 /// - Change the text **foreground/background** color.
 /// - Set/Reset **bold/underline/italic/blinking/strikethrough** style mode.
 /// - **Move/save/restore** the cursor position to display inputing text on terminal.
-#[derive(GodotClass)]
-#[class(init, base = Node)]
 pub struct AnsiString {
-    builder: String,
-    bg_256: i16,
-    fg_256: i16,
-    bg_r: i16,
-    bg_g: i16,
-    bg_b: i16,
-    fg_r: i16,
-    fg_g: i16,
-    fg_b: i16,
+    pub(crate) builder: String,
+    #[init(val = -1)]
+    pub(crate) bg_256: i16,
+    #[init(val = -1)]
+    pub(crate) fg_256: i16,
+    #[init(val = -1)]
+    pub(crate) bg_r: i16,
+    #[init(val = -1)]
+    pub(crate) bg_g: i16,
+    #[init(val = -1)]
+    pub(crate) bg_b: i16,
+    #[init(val = -1)]
+    pub(crate) fg_r: i16,
+    #[init(val = -1)]
+    pub(crate) fg_g: i16,
+    #[init(val = -1)]
+    pub(crate) fg_b: i16,
+
     base: Base<Node>,
 }
 
@@ -266,6 +277,24 @@ impl AnsiString {
     }
 
     #[func]
+    pub fn clear_cursor_to_end(&mut self) -> Gd<Self> {
+        self.builder.push_str(ESC0K);
+        self.to_gd()
+    }
+
+    #[func]
+    pub fn clear_cursor_to_start(&mut self) -> Gd<Self> {
+        self.builder.push_str(ESC1K);
+        self.to_gd()
+    }
+
+    #[func]
+    pub fn clear_line(&mut self) -> Gd<Self> {
+        self.builder.push_str(ESC2K);
+        self.to_gd()
+    }
+
+    #[func]
     pub fn clear_str(&mut self) -> Gd<Self> {
         self.builder.clear();
         self.to_gd()
@@ -301,4 +330,21 @@ impl CursorPositionHelper {
 #[inline]
 fn check_range(color: &i16) -> bool {
     (0..=255).contains(color)
+}
+
+impl From<AnsiString> for ShAnsiString {
+    #[inline]
+    fn from(value: AnsiString) -> Self {
+        ShAnsiString {
+            builder: value.builder.clone(),
+            bg_256: value.bg_256,
+            fg_256: value.fg_256,
+            bg_r: value.bg_r,
+            bg_g: value.bg_g,
+            bg_b: value.bg_b,
+            fg_r: value.fg_r,
+            fg_g: value.fg_g,
+            fg_b: value.fg_b,
+        }
+    }
 }

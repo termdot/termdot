@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "rust-embed",
 ]
@@ -546,7 +546,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "lazy_static",
  "libs",
@@ -877,7 +877,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "bitvec",
  "cli",
@@ -1015,9 +1015,9 @@ dependencies = [
 
 [[package]]
 name = "flate2"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
+checksum = "7ced92e76e966ca2fd84c8f7aa01a4aea65b0eb6648d72f7c8f3e2764a67fece"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -1714,10 +1714,11 @@ checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
 
 [[package]]
 name = "jobserver"
-version = "0.1.32"
+version = "0.1.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
+checksum = "38f262f097c174adebe41eb73d66ae9c06b2844fb0da69969647bbddd9b0538a"
 dependencies = [
+ "getrandom 0.3.2",
  "libc",
 ]
 
@@ -1799,7 +1800,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "asset",
  "chrono",
@@ -2313,7 +2314,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "asset",
  "cli",
@@ -2952,6 +2953,7 @@ dependencies = [
  "godot",
  "ipc",
  "lazy_static",
+ "parking_lot",
  "rand 0.9.0",
  "strum 0.26.3",
  "strum_macros 0.26.4",
@@ -3240,7 +3242,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#1eb52ec49c7a25138f0ec2a30ce4fb740bf9c903"
+source = "git+https://github.com/toocol/termio#426d0f596514bca62bc14962ad34030a72478d93"
 dependencies = [
  "cli",
  "emulator",

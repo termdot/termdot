@@ -1,16 +1,33 @@
-use crate::{command::Command, shell::Shell};
+use crate::{
+    command::{Command, internal::log::CmdLog},
+    shell::Shell,
+};
 use godot::{
     classes::{InputEvent, InputMap, ProjectSettings, notify::NodeNotification},
     prelude::*,
 };
 use ipc::{
-    IPC_DATA_SIZE,
+    HEART_BEAT_INTERVAL, IPC_DATA_SIZE,
     ipc_context::{IpcContext, SHARED_ID},
     ipc_event::IpcEvent,
 };
-use std::{process::Child, str::FromStr};
-use tmui::tlib::utils::SnowflakeGuidGenerator;
+use std::{cell::RefCell, process::Child, str::FromStr, time::Instant};
+use tmui::tlib::{global::SemanticExt, utils::SnowflakeGuidGenerator};
 use widestring::WideString;
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+thread_local! {
+    static TERMINAL_VERSION: RefCell<String> = const { RefCell::new(String::new()) };
+}
+
+#[inline]
+pub fn shell_version() -> &'static str {
+    VERSION
+}
+#[inline]
+pub fn terminal_version() -> &'static str {
+    TERMINAL_VERSION.with(|br| Box::leak(br.borrow().clone().boxed()))
+}
 
 #[cfg(windows_platform)]
 pub const APP_PATH: &str = "res://addons/termdot/termdot.exe";
@@ -43,6 +60,8 @@ pub struct Termdot {
 
     shell: Shell,
     child: Option<Child>,
+    #[init(val = Instant::now())]
+    last_heart_beat: Instant,
 
     base: Base<Node>,
 }
@@ -90,6 +109,8 @@ impl INode for Termdot {
             return;
         }
 
+        self.heart_beat();
+
         while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
             match evt {
                 IpcEvent::HeartBeat => {}
@@ -98,11 +119,9 @@ impl INode for Termdot {
                     self.child = None;
                     self.shell.reset();
                 }
-                IpcEvent::SetTerminalSize(cols, rows) => {
-                    self.shell.set_terminal_size(cols, rows);
-                }
+                IpcEvent::TerminalVersion(data, len) => self.set_terminal_version(data, len),
+                IpcEvent::SetTerminalSize(cols, rows) => self.shell.set_terminal_size(cols, rows),
                 IpcEvent::SendData(data, len) => self.recv_data(&data, len),
-
                 _ => {}
             }
         }
@@ -126,6 +145,7 @@ impl INode for Termdot {
     }
 
     fn exit_tree(&mut self) {
+        godot_print!("Exit tree");
         self.termdot_exit();
     }
 
@@ -136,10 +156,29 @@ impl INode for Termdot {
             | NodeNotification::UNPARENTED
             | NodeNotification::WM_CLOSE_REQUEST
             | NodeNotification::CRASH => {
+                godot_print!("Window closed");
                 self.termdot_exit();
             }
             _ => {}
         }
+    }
+}
+
+#[godot_api]
+impl Termdot {
+    #[func]
+    pub fn info(log: GString) {
+        CmdLog::info(log.to_string());
+    }
+
+    #[func]
+    pub fn warn(log: GString) {
+        CmdLog::warn(log.to_string());
+    }
+
+    #[func]
+    pub fn error(log: GString) {
+        CmdLog::error(log.to_string());
     }
 }
 
@@ -162,6 +201,22 @@ impl Termdot {
         for &c in wstr.as_slice() {
             self.shell.receive_char(c);
         }
+    }
+
+    fn set_terminal_version(&self, data: [u8; IPC_DATA_SIZE], len: usize) {
+        let mut data = data.to_vec();
+        data.truncate(len);
+        let version = match String::from_utf8(data) {
+            Ok(v) => v,
+            Err(e) => {
+                godot_error!(
+                    "[Termdot::recv_data] Parse utf-8 string failed, err = {:?}",
+                    e
+                );
+                "UNKNOWN_VERSION".to_string()
+            }
+        };
+        TERMINAL_VERSION.with(|rf| *rf.borrow_mut() = version);
     }
 
     fn termdot_exit(&mut self) {
@@ -196,6 +251,17 @@ impl Termdot {
             if let Err(e) = ipc_ctx.try_send(event) {
                 godot_error!("[Termdot::process] Send ipc event failed, e = {:?}", e);
             }
+        }
+    }
+
+    fn heart_beat(&mut self) {
+        if self.child.is_none() {
+            return;
+        }
+
+        if self.last_heart_beat.elapsed().as_millis() >= HEART_BEAT_INTERVAL {
+            self.last_heart_beat = Instant::now();
+            self.send_ipc_event(IpcEvent::HeartBeat);
         }
     }
 }

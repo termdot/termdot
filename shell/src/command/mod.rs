@@ -27,6 +27,9 @@ impl Command {
         ShExecuteStatus::Done
     }
 
+    #[func(virtual, gd_self)]
+    pub fn interrupting(gd: Gd<Self>) {}
+
     #[func]
     /// Get current terminal size, represent as (cols, rows)
     pub fn get_terminal_size(&self) -> Vector2i {

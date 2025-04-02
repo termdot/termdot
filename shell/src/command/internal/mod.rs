@@ -1,4 +1,6 @@
 pub mod cls;
+pub mod log;
+pub mod version;
 
 use crate::{shell::SHELL, utils::ansi_string::rust::ShAnsiString};
 use godot::builtin::{Array, GString, Vector2i};
@@ -18,6 +20,9 @@ pub trait IInternalCommand {
     fn running(&mut self) -> ShExecuteStatus {
         ShExecuteStatus::Done
     }
+
+    #[inline]
+    fn interrupting(&mut self) {}
 
     #[inline]
     /// Get current terminal size, represent as (cols, rows)

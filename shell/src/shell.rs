@@ -1,10 +1,13 @@
 use crate::command::execute_status::ShExecuteStatus;
 use crate::command::internal::cls::CmdCls;
+use crate::command::internal::log::CmdLog;
+use crate::command::internal::version::CmdVersion;
 use crate::command::internal::{IInternalCommand, InternalCommandHnd};
 use crate::command::{Command, internal::InternalCommand};
 use crate::utils::ansi_string::godot::AnsiString;
 use crate::utils::ansi_string::rust::ShAnsiString;
 use crate::utils::charmap::*;
+use crate::utils::escape_sequence::ESC0M;
 use ahash::AHashMap;
 use derivative::Derivative;
 use godot::{
@@ -101,8 +104,14 @@ impl Shell {
 
     #[inline]
     pub fn init_internal_command(&mut self) {
-        let cls = CmdCls.boxed();
-        self.internal_command_map.insert(cls.command_name(), cls);
+        let cmd = CmdCls.boxed();
+        self.internal_command_map.insert(cmd.command_name(), cmd);
+
+        let cmd = CmdVersion.boxed();
+        self.internal_command_map.insert(cmd.command_name(), cmd);
+
+        let cmd = CmdLog.boxed();
+        self.internal_command_map.insert(cmd.command_name(), cmd);
     }
 
     #[inline]
@@ -117,19 +126,19 @@ impl Shell {
 
     #[inline]
     pub fn prompt(&mut self) {
-        let prompt = &self.prompt;
+        let prompt = format!("{}{}", ESC0M, self.prompt);
         let wstr = WideString::from_str(&prompt);
         for &c in wstr.as_slice() {
             self.emulation.receive_char(c);
         }
-        self.echos.extend(IpcEvent::pack_data(prompt));
+        self.echos.extend(IpcEvent::pack_data(&prompt));
         self.cursor_origin = self.get_cursor_position();
         self.columns = self.get_terminal_size().x;
     }
 
     #[inline]
     pub fn crlf_prompt(&mut self) {
-        let prompt = format!("\r\n{}", self.prompt);
+        let prompt = format!("{}\r\n{}", ESC0M, self.prompt);
         let wstr = WideString::from_str(&prompt);
         for &c in wstr.as_slice() {
             self.emulation.receive_char(c);
@@ -315,7 +324,10 @@ impl Shell {
                 self.command_completion();
                 None
             }
-            CTL_SIGINT => None,
+            CTL_SIGINT => {
+                self.interrupt();
+                None
+            }
             CTL_CARRIAGE_RETURN => {
                 let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
                 if !self.buffer.is_empty() {
@@ -571,5 +583,29 @@ impl Shell {
             self.emulation.receive_char(c);
         }
         self.cursor_origin = self.get_cursor_position();
+    }
+
+    #[inline]
+    fn interrupt(&mut self) {
+        let mut interrupted = false;
+        if let Some(running_command) = self.running_command.clone() {
+            Command::interrupting(running_command);
+
+            self.running_command = None;
+            interrupted = true;
+        }
+
+        if let Some(icm) = self.running_internal_command {
+            ptr_mut!(icm).interrupting();
+
+            self.running_internal_command = None;
+            interrupted = true;
+        }
+
+        if interrupted {
+            self.sh_echo(ShAnsiString::new().append("\r\n^C"));
+        }
+
+        self.crlf_prompt();
     }
 }

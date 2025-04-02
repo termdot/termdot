@@ -1,7 +1,10 @@
 use super::title_bar::TitleBar;
-use crate::{events::EventBus, pty::termdot_pty::TermdotPty};
+use crate::{
+    events::{EventBus, EventType, Events},
+    pty::termdot_pty::TermdotPty,
+};
 use termio::{cli::session::SessionPropsId, emulator::core::terminal_emulator::TerminalEmulator};
-use tlib::{global_watch, iter_executor, run_after};
+use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after};
 use tmui::{
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
@@ -30,6 +33,8 @@ impl ObjectSubclass for App {
 
 impl ObjectImpl for App {
     fn initialize(&mut self) {
+        EventBus::register(self);
+
         self.terminal_emulator.set_hexpand(true);
         self.terminal_emulator.set_vexpand(true);
 
@@ -259,6 +264,27 @@ impl GlobalWatchImpl for App {
         }
 
         false
+    }
+}
+
+impl EventHandle for App {
+    type EventType = EventType;
+    type Event = Events;
+
+    #[inline]
+    fn listen(&self) -> Vec<Self::EventType> {
+        vec![EventType::HeartBeatUndetected]
+    }
+
+    #[inline]
+    #[allow(clippy::single_match)]
+    fn handle(&mut self, evt: &Self::Event) {
+        match evt {
+            Events::HeartBeatUndetected => {
+                ApplicationWindow::window().close();
+            }
+            _ => {}
+        }
     }
 }
 

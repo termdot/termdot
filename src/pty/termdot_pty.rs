@@ -1,6 +1,9 @@
-use crate::events::{EventBus, Events};
-use ipc::{ipc_context::IpcContext, ipc_event::IpcEvent};
-use std::path::PathBuf;
+use crate::{
+    events::{EventBus, Events},
+    terminal_version,
+};
+use ipc::{ipc_context::IpcContext, ipc_event::IpcEvent, HEART_BEAT_INTERVAL};
+use std::{path::PathBuf, time::Instant};
 use termio::{
     cli::session::SessionPropsId,
     emulator::pty::{Pty, PtySignals},
@@ -19,6 +22,7 @@ pub struct TermdotPty {
     running: bool,
     timeout: u32,
     ipc_context: Option<IpcContext>,
+    last_heart_beat: Option<Instant>,
 }
 
 impl ObjectSubclass for TermdotPty {
@@ -37,6 +41,7 @@ impl Pty for TermdotPty {
             self.window_size.width(),
             self.window_size.height(),
         ));
+        self.send_ipc_data(IpcEvent::pack_terminal_version(terminal_version()));
         self.send_ipc_data(IpcEvent::Ready);
 
         self.running
@@ -100,9 +105,16 @@ impl Pty for TermdotPty {
             None => return vec![],
         };
 
+        if let Some(last_heart_beat) = self.last_heart_beat {
+            if last_heart_beat.elapsed().as_millis() > HEART_BEAT_INTERVAL * 3 {
+                EventBus::push(Events::HeartBeatUndetected);
+                return vec![];
+            }
+        }
+
         if let Some(evt) = ctx.try_recv() {
             match evt {
-                IpcEvent::HeartBeat => {}
+                IpcEvent::HeartBeat => self.last_heart_beat = Some(Instant::now()),
                 IpcEvent::Ready => EventBus::push(Events::MasterReay),
                 IpcEvent::Exit => {
                     self.running = false;
@@ -129,6 +141,7 @@ impl Pty for TermdotPty {
                     };
                     EventBus::push(Events::TitleChanged(data));
                 }
+                _ => {}
             }
         }
 

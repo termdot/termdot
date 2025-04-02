@@ -9,6 +9,7 @@ pub enum IpcEvent {
     Exit,
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
+    TerminalVersion([u8; IPC_DATA_SIZE], usize),
     HostNameChanged([u8; IPC_DATA_SIZE], usize),
     SendData([u8; IPC_DATA_SIZE], usize),
 }
@@ -61,6 +62,30 @@ impl IpcEvent {
         array[..chunk.len()].copy_from_slice(chunk);
 
         IpcEvent::HostNameChanged(array, chunk.len())
+    }
+
+    pub fn pack_terminal_version(version: &str) -> IpcEvent {
+        if version.len() > IPC_DATA_SIZE {
+            panic!(
+                "[IpcEvent::pack_terminal_version] version is too long, max length is {}",
+                IPC_DATA_SIZE
+            );
+        }
+
+        let bytes = version.as_bytes();
+        let start = 0;
+
+        let mut end = (start + IPC_DATA_SIZE).min(bytes.len());
+
+        while end > start && !version.is_char_boundary(end) {
+            end -= 1;
+        }
+
+        let chunk = &bytes[start..end];
+        let mut array = [0u8; IPC_DATA_SIZE];
+        array[..chunk.len()].copy_from_slice(chunk);
+
+        IpcEvent::TerminalVersion(array, chunk.len())
     }
 }
 

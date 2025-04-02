@@ -9,6 +9,13 @@ use ipc::ipc_context::SHARED_ID;
 use std::sync::atomic::Ordering;
 use tmui::{application::Application, application_window::ApplicationWindow, prelude::*};
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[inline]
+pub fn terminal_version() -> &'static str {
+    VERSION
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() == 2 {

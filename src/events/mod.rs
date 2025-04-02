@@ -6,7 +6,8 @@ use tmui::tlib::{
 #[repr(u8)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum EventType {
-    MasterExit = 0,
+    HeartBeatUndetected = 0,
+    MasterExit,
     MasterReady,
     TitleChanged,
 }
@@ -14,6 +15,7 @@ impl IEventType for EventType {}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Events {
+    HeartBeatUndetected,
     MasterExit,
     MasterReay,
     TitleChanged(String),
@@ -24,6 +26,7 @@ impl IEvent for Events {
     #[inline]
     fn ty(&self) -> EventType {
         match self {
+            Self::HeartBeatUndetected => EventType::HeartBeatUndetected,
             Self::MasterExit => EventType::MasterExit,
             Self::MasterReay => EventType::MasterReady,
             Self::TitleChanged(..) => EventType::TitleChanged,

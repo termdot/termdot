@@ -24,3 +24,4 @@ lazy_static = { workspace = true }
 strum = { workspace = true }
 strum_macros = { workspace = true }
 rand = { workspace = true }
+parking_lot = { workspace = true }
