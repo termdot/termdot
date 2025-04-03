@@ -204,6 +204,7 @@ dependencies = [
  "rand 0.9.0",
  "termio",
  "tmui",
+ "wchar",
  "widestring",
 ]
 

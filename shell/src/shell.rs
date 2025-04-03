@@ -15,6 +15,7 @@ use godot::{
     obj::Gd,
 };
 use ipc::ipc_event::IpcEvent;
+use termio::emulator::core::uwchar_t;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::ptr::NonNull;
@@ -82,6 +83,8 @@ impl Shell {
 
         let wstr = WideString::from_str(&text);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
     }
@@ -93,6 +96,8 @@ impl Shell {
 
         let wstr = WideString::from_str(&text);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
     }
@@ -129,6 +134,8 @@ impl Shell {
         let prompt = format!("{}{}", ESC0M, self.prompt);
         let wstr = WideString::from_str(&prompt);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
         self.echos.extend(IpcEvent::pack_data(&prompt));
@@ -141,6 +148,8 @@ impl Shell {
         let prompt = format!("{}\r\n{}", ESC0M, self.prompt);
         let wstr = WideString::from_str(&prompt);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
         self.echos.extend(IpcEvent::pack_data(&prompt));
@@ -270,6 +279,8 @@ impl Shell {
                             .extend(IpcEvent::pack_data(&replay_text.to_string_lossy()));
 
                         for &c in replay_text.as_slice() {
+                            #[allow(clippy::useless_transmute)]
+                            let c: wchar_t = unsafe { std::mem::transmute(c) };
                             self.emulation.receive_char(c);
                         }
                     }
@@ -295,6 +306,8 @@ impl Shell {
                             .extend(IpcEvent::pack_data(&replay_text.to_string_lossy()));
 
                         for &c in replay_text.as_slice() {
+                            #[allow(clippy::useless_transmute)]
+                            let c: wchar_t = unsafe { std::mem::transmute(c) };
                             self.emulation.receive_char(c);
                         }
                     }
@@ -329,7 +342,9 @@ impl Shell {
                 None
             }
             CTL_CARRIAGE_RETURN => {
-                let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+                #[allow(clippy::useless_transmute)]
+                let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.clone()) }; 
+                let data = WideString::from_vec(buffer).to_string_lossy();
                 if !self.buffer.is_empty() {
                     self.u_stack.push(self.buffer.clone());
                 }
@@ -366,10 +381,13 @@ impl Shell {
         self.cursor += 1;
 
         if self.cursor == self.buffer.len() {
+            let c: uwchar_t = unsafe { std::mem::transmute(c) };
             let c = WideString::from_vec(vec![c]).to_string_lossy();
             self.echos.extend(IpcEvent::pack_data(&c));
         } else {
-            let data = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+            #[allow(clippy::useless_transmute)]
+            let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.clone()) };
+            let data = WideString::from_vec(buffer).to_string_lossy();
             let (row, col) = self.cursor_to_position();
             let echo = format!(
                 "\x1B[{};{}H\x1B[K{}\x1B[{};{}H",
@@ -423,6 +441,8 @@ impl Shell {
 
             let wstr = WideString::from_str(&send_back);
             for &c in wstr.as_slice() {
+                #[allow(clippy::useless_transmute)]
+                let c: wchar_t = unsafe { std::mem::transmute(c) };
                 self.emulation.receive_char(c);
             }
 
@@ -450,7 +470,9 @@ impl Shell {
         let text = format!("\x1B[{};{}H\x1B[K", cursor_origin.y, cursor_origin.x,);
         let mut text = WideString::from_str(&text);
 
-        let mut cur_text = WideString::from_vec(self.buffer.to_vec()).to_string_lossy();
+        #[allow(clippy::useless_transmute)]
+        let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.to_vec()) };
+        let mut cur_text = WideString::from_vec(buffer).to_string_lossy();
         let cursor_pos = self.cursor_to_position();
         cur_text.push_str(&format!("\x1B[{};{}H", cursor_pos.0, cursor_pos.1));
 
@@ -475,7 +497,9 @@ impl Shell {
     }
 
     fn command_completion(&mut self) {
-        let input = WideString::from_vec(self.buffer.clone()).to_string_lossy();
+        #[allow(clippy::useless_transmute)]
+        let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.to_vec()) };
+        let input = WideString::from_vec(buffer).to_string_lossy();
         let mut echo = String::new();
         let mut prompt = false;
         if input.is_empty() {
@@ -513,7 +537,9 @@ impl Shell {
                     echo.push_str(&format!("\x1B[{};{}H{}", origin.y, origin.x, cmd));
 
                     let wstr = WideString::from_str(cmd);
-                    self.buffer = wstr.as_slice().to_vec();
+                    #[allow(clippy::useless_transmute)]
+                    let buffer: Vec<wchar_t> = unsafe { std::mem::transmute(wstr.as_slice().to_vec()) };
+                    self.buffer = buffer;
                     self.cursor = self.buffer.len();
                 }
                 Ordering::Less => {}
@@ -531,6 +557,8 @@ impl Shell {
 
             let wstr = WideString::from_str(&echo);
             for &c in wstr.as_slice() {
+                #[allow(clippy::useless_transmute)]
+                let c: wchar_t = unsafe { std::mem::transmute(c) };
                 self.emulation.receive_char(c);
             }
 
@@ -547,6 +575,8 @@ impl Shell {
 
                 let wstr = WideString::from_str(&input);
                 for &c in wstr.as_slice() {
+                    #[allow(clippy::useless_transmute)]
+                    let c: wchar_t = unsafe { std::mem::transmute(c) };
                     self.emulation.receive_char(c);
                 }
             }
@@ -580,6 +610,8 @@ impl Shell {
             .push_back(IpcEvent::pack_data(send_back).pop().unwrap());
         let wstr = WideString::from_str(&send_back);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
         self.cursor_origin = self.get_cursor_position();

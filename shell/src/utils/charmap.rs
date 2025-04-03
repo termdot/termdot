@@ -1,3 +1,5 @@
+use wchar::wchar_t;
+
 /// Common character str
 pub const DOT: &str = ".";
 pub const SLASH: &str = "/";
@@ -9,48 +11,48 @@ pub const EMPTY: &str = "";
 pub const SPACE: &str = " ";
 
 /// Common character code points
-pub const ASCII_SPACE: u16 = 0x0020; // Space
-pub const ASCII_TILDE: u16 = 0x007E; // ~
-pub const ASCII_LEFT_SQUARE_BRACKET: u16 = 0x005B; // [
+pub const ASCII_SPACE: wchar_t = 0x0020; // Space
+pub const ASCII_TILDE: wchar_t = 0x007E; // ~
+pub const ASCII_LEFT_SQUARE_BRACKET: wchar_t = 0x005B; // [
 
-pub const UNICODE_NBSP: u16 = 0x00A0; // Non-breaking space
-pub const UNICODE_EM_DASH: u16 = 0x2014; // Em dash
-pub const UNICODE_BULLET: u16 = 0x2022; // Bullet point
+pub const UNICODE_NBSP: wchar_t = 0x00A0; // Non-breaking space
+pub const UNICODE_EM_DASH: wchar_t = 0x2014; // Em dash
+pub const UNICODE_BULLET: wchar_t = 0x2022; // Bullet point
 
 // Common control character code points:
 /// Null character (NUL)
-pub const CTL_NULL: u16 = 0x0000; 
+pub const CTL_NULL: wchar_t = 0x0000; 
 /// Bell (BEL)
-pub const CTL_BELL: u16 = 0x0007; 
+pub const CTL_BELL: wchar_t = 0x0007; 
 /// Backspace (BS)
-pub const CTL_BACKSPACE: u16 = 0x0008; 
+pub const CTL_BACKSPACE: wchar_t = 0x0008; 
 /// Tab (TAB)
-pub const CTL_TAB: u16 = 0x0009; 
+pub const CTL_TAB: wchar_t = 0x0009; 
 /// Line feed (LF)
-pub const CTL_NEWLINE: u16 = 0x000A; 
+pub const CTL_NEWLINE: wchar_t = 0x000A; 
 /// Carriage return (CR)
-pub const CTL_CARRIAGE_RETURN: u16 = 0x000D;
+pub const CTL_CARRIAGE_RETURN: wchar_t = 0x000D;
 /// ESC
-pub const CTL_ESCAPE: u16 = 0x001B; 
+pub const CTL_ESCAPE: wchar_t = 0x001B; 
 /// Control+C
-pub const CTL_SIGINT: u16 = 0x0003;
+pub const CTL_SIGINT: wchar_t = 0x0003;
 
 // Common keyboard control character code points:
 /// ↑ `A` at the end of escape sequence \x1B[A
-pub const KEY_UP: u16 = 0x0041;
+pub const KEY_UP: wchar_t = 0x0041;
 /// ↓ `B` at the end of escape sequence \x1B[B
-pub const KEY_DOWN: u16 = 0x0042; 
+pub const KEY_DOWN: wchar_t = 0x0042; 
 /// → `C` at the end of escape sequence \x1B[C
-pub const KEY_RIGHT: u16 = 0x0043; 
+pub const KEY_RIGHT: wchar_t = 0x0043; 
 /// ← `D` at the end of escape sequence \x1B[D
-pub const KEY_LEFT: u16 = 0x0044; 
+pub const KEY_LEFT: wchar_t = 0x0044; 
 /// `H` at the end of escape sequence \X1B[H
-pub const KEY_HOME: u16 = 0x0048;
+pub const KEY_HOME: wchar_t = 0x0048;
 /// `F` at the end of escape sequence \X1B[F
-pub const KEY_END: u16 = 0x0046;
+pub const KEY_END: wchar_t = 0x0046;
 
 /// Determines if a character is printable
-pub fn is_printable(ch: u16) -> bool {
+pub fn is_printable(ch: wchar_t) -> bool {
     match ch {
         // Printable ASCII characters (0x20-0x7E)
         0x0020..=0x007E => true,

@@ -10,6 +10,8 @@ use widestring::WideString;
 fn emulation_receive_data(emulation: &mut VT102Emulation, data: &str) {
     let wstr = WideString::from_str(data);
     for &c in wstr.as_slice() {
+        #[allow(clippy::useless_transmute)]
+        let c = unsafe { std::mem::transmute(c) };
         emulation.receive_char(c)
     }
 }

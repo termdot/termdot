@@ -11,6 +11,7 @@ use ipc::{
     ipc_context::{IpcContext, SHARED_ID},
     ipc_event::IpcEvent,
 };
+use wchar::wchar_t;
 use std::{cell::RefCell, process::Child, str::FromStr, time::Instant};
 use tmui::tlib::{global::SemanticExt, utils::SnowflakeGuidGenerator};
 use widestring::WideString;
@@ -199,6 +200,8 @@ impl Termdot {
 
         let wstr = WideString::from_str(&data);
         for &c in wstr.as_slice() {
+            #[allow(clippy::useless_transmute)]
+            let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.shell.receive_char(c);
         }
     }
