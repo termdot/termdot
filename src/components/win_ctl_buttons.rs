@@ -1,5 +1,4 @@
-use super::color_table::{CTL_BTN_GREY, CTL_BTN_RED};
-use crate::{assets::Asset, components::title_bar::TITLE_BAR_HEIGHT};
+use crate::{assets::Asset, components::title_bar::TITLE_BAR_HEIGHT, config::TermdotConfig};
 use tmui::{
     icons::{svg_icon::SvgIcon, svg_toggle_icon::SvgToggleIcon},
     prelude::*,
@@ -48,7 +47,7 @@ impl ObjectImpl for WinControlButtons {
         self.minimize.width_request(45);
         self.minimize.height_request(TITLE_BAR_HEIGHT - 1);
         self.minimize
-            .register_mouse_enter(|w| w.set_background(CTL_BTN_GREY));
+            .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_grey()));
         self.minimize
             .register_mouse_leave(move |w| w.set_background(background));
         self.minimize
@@ -57,7 +56,7 @@ impl ObjectImpl for WinControlButtons {
         self.maximize_restore.width_request(45);
         self.maximize_restore.height_request(TITLE_BAR_HEIGHT - 1);
         self.maximize_restore
-            .register_mouse_enter(|w| w.set_background(CTL_BTN_GREY));
+            .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_grey()));
         self.maximize_restore
             .register_mouse_leave(move |w| w.set_background(background));
         self.maximize_restore.register_mouse_released(|w, _| {
@@ -82,7 +81,7 @@ impl ObjectImpl for WinControlButtons {
         self.close.width_request(45);
         self.close.height_request(TITLE_BAR_HEIGHT - 1);
         self.close
-            .register_mouse_enter(|w| w.set_background(CTL_BTN_RED));
+            .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_red()));
         self.close
             .register_mouse_leave(move |w| w.set_background(background));
         self.close

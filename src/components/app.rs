@@ -1,9 +1,16 @@
 use super::title_bar::TitleBar;
 use crate::{
+    config::TermdotConfig,
     events::{EventBus, EventType, Events},
     pty::termdot_pty::TermdotPty,
 };
-use termio::{cli::session::SessionPropsId, emulator::core::terminal_emulator::TerminalEmulator};
+use termio::{
+    cli::{
+        session::SessionPropsId,
+        theme::{theme_mgr::ThemeMgr, Theme},
+    },
+    emulator::core::terminal_emulator::TerminalEmulator,
+};
 use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after};
 use tmui::{
     prelude::*,
@@ -51,6 +58,12 @@ impl WidgetImpl for App {
         if let Some(w) = win.find_id_mut(TerminalEmulator::id()) {
             let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
             emulator.start_custom_session(ID, TermdotPty::new());
+
+            let theme = ThemeMgr::get("Dark").unwrap();
+            emulator.set_theme(ID, &theme);
+            self.set_theme(theme);
+
+            emulator.set_font(TermdotConfig::font());
         }
     }
 }
@@ -319,5 +332,12 @@ impl App {
     #[inline]
     pub fn new() -> Box<Self> {
         Object::new(&[])
+    }
+
+    #[inline]
+    pub fn set_theme(&mut self, theme: Theme) {
+        self.window().set_background(theme.background_color());
+
+        TermdotConfig::set_theme(theme);
     }
 }

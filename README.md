@@ -10,9 +10,9 @@ Terminal style external command executor for Godot.
 
 Supports control characters and escape sequences of XTerm, VT102.
 
-![Termdot Display](src/resources/termdot_display.gif)
+<!-- ![Termdot Display](src/resources/termdot_display.gif) -->
 
-<!-- ![Termdot Image](src/resources/termdot.png) -->
+![Termdot Image](src/resources/termdot.png)
 
 ## Features
 

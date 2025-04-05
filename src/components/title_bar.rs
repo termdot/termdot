@@ -1,10 +1,10 @@
-use super::{
-    color_table::APP_BACKGROUND, session_tab::SessionTab, win_ctl_buttons::WinControlButtons,
-};
+use crate::config::TermdotConfig;
+
+use super::{session_tab::SessionTab, win_ctl_buttons::WinControlButtons};
 use tlib::global_watch;
 use tmui::{prelude::*, tlib::object::ObjectSubclass};
 
-pub const TITLE_BAR_HEIGHT: i32 = 30;
+pub const TITLE_BAR_HEIGHT: i32 = 35;
 
 #[extends(Widget, Layout(HBox))]
 #[derive(Childrenable)]
@@ -25,11 +25,14 @@ impl ObjectSubclass for TitleBar {
 
 impl ObjectImpl for TitleBar {
     fn initialize(&mut self) {
-        self.set_background(APP_BACKGROUND);
+        self.set_background(TermdotConfig::background());
         self.height_request(TITLE_BAR_HEIGHT);
         self.set_hexpand(true);
         self.set_homogeneous(false);
         self.set_mouse_tracking(true);
+
+        self.set_borders(0., 0., 1., 0.);
+        self.set_border_color(TermdotConfig::separator());
     }
 }
 

@@ -46,6 +46,7 @@ impl CmdLog {
             .append("[")
             .foreground_256(Color256::BRIGHT_GREEN)
             .append("INFO")
+            .clear_style()
             .append("] ")
             .append(&log);
 
@@ -60,6 +61,7 @@ impl CmdLog {
             .append("[")
             .foreground_256(Color256::BRIGHT_YELLOW)
             .append("WARN")
+            .clear_style()
             .append("] ")
             .append(&log);
 
@@ -74,6 +76,7 @@ impl CmdLog {
             .append("[")
             .foreground_256(Color256::BRIGHT_RED)
             .append("ERROR")
+            .clear_style()
             .append("] ")
             .append(&log);
 

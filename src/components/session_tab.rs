@@ -1,21 +1,30 @@
-use crate::events::{EventBus, EventType, Events};
-
-use super::color_table::{
-    SESSION_ALIVE_COLOR, SESSION_DEAD_COLOR, TERMINAL_BACKGROUND, TERMINAL_FOREGROUND,
+use crate::{
+    config::TermdotConfig,
+    events::{EventBus, EventType, Events},
 };
-use tlib::{event_bus::event_handle::EventHandle, skia_safe::Path};
+
+use super::title_bar::TITLE_BAR_HEIGHT;
+use crate::assets::Asset;
+use tlib::event_bus::event_handle::EventHandle;
 use tmui::{
-    graphics::box_shadow::{BoxShadow, ShadowSide},
+    icons::svg_icon::SvgIcon,
     label::Label,
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
     widget::WidgetImpl,
 };
 
-#[extends(Widget)]
-#[derive(Childable)]
+#[extends(Widget, Layout(HBox))]
+#[derive(Childrenable)]
 pub struct SessionTab {
-    #[child]
+    #[derivative(Default(value = "{
+        let file = Asset::get(\"icons/godotengine.svg\").unwrap();
+        SvgIcon::from_bytes(file.data.as_ref())
+    }"))]
+    #[children]
+    icon: Box<SvgIcon>,
+
+    #[children]
     session_label: Box<Label>,
 
     session_alive: bool,
@@ -30,62 +39,41 @@ impl ObjectImpl for SessionTab {
         EventBus::register(self);
 
         self.width_request(200);
-        self.height_request(25);
+        self.height_request(TITLE_BAR_HEIGHT - 1);
         self.set_margin_left(8);
-        self.set_valign(Align::End);
-        self.set_border_radius_sep(5., 5., 0., 0.);
-        self.set_box_shadow(BoxShadow::new(
-            5.,
-            Color::BLACK,
-            None,
-            Some(ShadowSide::new(&[
-                ShadowSide::LEFT,
-                ShadowSide::TOP,
-                ShadowSide::RIGHT,
-            ])),
-            Some(2),
-            None,
-        ));
+        self.set_valign(Align::Center);
+        self.set_homogeneous(false);
         self.set_strict_clip_widget(false);
+        self.set_borders(0., 0., 2., 0.);
+        self.set_border_color(Color::hex("#3b78ff"));
 
-        self.set_background(TERMINAL_BACKGROUND);
+        self.set_background(TermdotConfig::background());
 
+        let size = self.size();
+        let icon_size = self.icon.size();
+        let margin = 5;
+
+        self.icon.set_valign(Align::Center);
+        self.icon.set_halign(Align::Center);
+        self.icon.set_margin_left(margin);
+
+        self.session_label.set_size_hint(
+            SizeHint::new().with_max_width(size.width() - icon_size.width() - margin * 2),
+        );
+        self.session_label.set_margin_left(margin);
+        self.session_label.set_margin_top(2);
         self.session_label.set_halign(Align::Center);
         self.session_label.set_valign(Align::Center);
-        self.session_label.set_content_halign(Align::Center);
+        self.session_label.set_content_halign(Align::Start);
         self.session_label.set_content_valign(Align::Center);
         self.session_label.set_text("SESSION TAB");
-        self.session_label.set_color(TERMINAL_FOREGROUND);
+        self.session_label.set_color(TermdotConfig::foreground());
+        self.session_label.set_auto_wrap(false);
+        self.session_label.set_font(TermdotConfig::font());
     }
 }
 
-impl WidgetImpl for SessionTab {
-    fn paint(&mut self, painter: &mut Painter) {
-        let rect = self.rect_f();
-        let tl = rect.top_left();
-        let bl = rect.bottom_left();
-        let p = (tl.x() + 10., (tl.y() + bl.y()) / 2. - 1.);
-        let color = if self.session_alive {
-            SESSION_ALIVE_COLOR
-        } else {
-            SESSION_DEAD_COLOR
-        };
-
-        painter.set_color(color);
-        painter.set_antialiasing(true);
-        let mut path = Path::default();
-        path.add_circle(p, 3., None);
-        painter.draw_path(&path);
-
-        let r = 7.;
-        painter.set_color(TERMINAL_BACKGROUND);
-
-        let lb = FRect::new(rect.left() - r, rect.bottom() - r, r, r);
-        painter.draw_varying_arc_global(lb, 0., 90., 2., 2., 8);
-        let rb = FRect::new(rect.right(), rect.bottom() - r, r, r);
-        painter.draw_varying_arc_global(rb, 90., 90., 2., 2., 8);
-    }
-}
+impl WidgetImpl for SessionTab {}
 
 impl SessionTab {
     #[inline]
