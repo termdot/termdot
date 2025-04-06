@@ -3,9 +3,9 @@ pub mod shell;
 pub mod termdot;
 pub mod utils;
 
+use common::log::LocalLog;
 use godot::prelude::*;
 use tmui::prelude::ActionHub;
-use utils::log::LocalLog;
 
 struct TermdotShell;
 

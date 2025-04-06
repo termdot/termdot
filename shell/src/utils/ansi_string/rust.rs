@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use crate::utils::charmap::*;
-use crate::utils::escape_sequence::*;
+use common::escape_sequence::*;
 
 /// Building syled string texts with [Ansi Escape Code Sequence](https://gist.github.com/Joezeo/ce688cf42636376650ead73266256336) for terminal.  
 ///

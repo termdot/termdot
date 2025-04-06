@@ -11,9 +11,9 @@ use ipc::{
     ipc_context::{IpcContext, SHARED_ID},
     ipc_event::IpcEvent,
 };
-use wchar::wchar_t;
 use std::{cell::RefCell, process::Child, str::FromStr, time::Instant};
 use tmui::tlib::{global::SemanticExt, utils::SnowflakeGuidGenerator};
+use wchar::wchar_t;
 use widestring::WideString;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -112,6 +112,8 @@ impl INode for Termdot {
 
         self.heart_beat();
 
+        self.shell.check_buffer_storage();
+
         while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
             match evt {
                 IpcEvent::HeartBeat => {}
@@ -198,12 +200,18 @@ impl Termdot {
             }
         };
 
+        if len > 1 {
+            self.shell.set_replay_hint(true);
+        }
+
         let wstr = WideString::from_str(&data);
         for &c in wstr.as_slice() {
             #[allow(clippy::useless_transmute)]
             let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.shell.receive_char(c);
         }
+
+        self.shell.echo_replay_text();
     }
 
     fn set_terminal_version(&self, data: [u8; IPC_DATA_SIZE], len: usize) {

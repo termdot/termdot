@@ -2,7 +2,7 @@
 use std::str::FromStr;
 
 use crate::utils::charmap::*;
-use crate::utils::escape_sequence::*;
+use common::escape_sequence::*;
 use godot::prelude::*;
 
 use super::rust::ShAnsiString;

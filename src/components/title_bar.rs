@@ -1,7 +1,10 @@
-use crate::config::TermdotConfig;
+use crate::{
+    config::TermdotConfig,
+    events::{EventBus, EventType, Events},
+};
 
 use super::{session_tab::SessionTab, win_ctl_buttons::WinControlButtons};
-use tlib::global_watch;
+use tlib::{event_bus::event_handle::EventHandle, global_watch};
 use tmui::{prelude::*, tlib::object::ObjectSubclass};
 
 pub const TITLE_BAR_HEIGHT: i32 = 35;
@@ -25,6 +28,8 @@ impl ObjectSubclass for TitleBar {
 
 impl ObjectImpl for TitleBar {
     fn initialize(&mut self) {
+        EventBus::register(self);
+
         self.set_background(TermdotConfig::background());
         self.height_request(TITLE_BAR_HEIGHT);
         self.set_hexpand(true);
@@ -78,5 +83,27 @@ impl TitleBar {
     #[inline]
     pub fn new() -> Box<Self> {
         Object::new(&[])
+    }
+}
+
+impl EventHandle for TitleBar {
+    type EventType = EventType;
+    type Event = Events;
+
+    #[inline]
+    fn listen(&self) -> Vec<Self::EventType> {
+        vec![EventType::ThemeChanged]
+    }
+
+    #[inline]
+    #[allow(clippy::single_match)]
+    fn handle(&mut self, evt: &Self::Event) {
+        match evt {
+            Events::ThemeChanged => {
+                self.set_background(TermdotConfig::background());
+                self.set_border_color(TermdotConfig::separator());
+            }
+            _ => {}
+        }
     }
 }

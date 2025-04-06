@@ -1,5 +1,5 @@
 [workspace]
-members = ["shell", "ipc", "benchmark"]
+members = ["shell", "ipc", "benchmark", "common"]
 
 [package]
 name = "termdot"
@@ -15,6 +15,7 @@ godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
 tmui = { git = "https://github.com/toocol/tmui" }
 termio = { git = "https://github.com/toocol/termio" }
 
+common = { path = "common/" }
 ipc = { path = "ipc/" }
 
 log = "0.4"
@@ -39,6 +40,7 @@ termio = { workspace = true }
 ipc = { workspace = true }
 log4rs = { workspace = true }
 rust-embed = { workspace = true }
+common = { workspace = true }
 
 [profile.release]
 opt-level = "z"

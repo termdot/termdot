@@ -26,8 +26,6 @@ pub struct SessionTab {
 
     #[children]
     session_label: Box<Label>,
-
-    session_alive: bool,
 }
 
 impl ObjectSubclass for SessionTab {
@@ -45,8 +43,8 @@ impl ObjectImpl for SessionTab {
         self.set_homogeneous(false);
         self.set_strict_clip_widget(false);
         self.set_borders(0., 0., 2., 0.);
-        self.set_border_color(Color::hex("#3b78ff"));
 
+        self.set_border_color(TermdotConfig::active_session());
         self.set_background(TermdotConfig::background());
 
         let size = self.size();
@@ -80,12 +78,6 @@ impl SessionTab {
     pub fn set_session_name(&mut self, name: &str) {
         self.session_label.set_text(name);
     }
-
-    #[inline]
-    pub fn set_session_alive(&mut self, alive: bool) {
-        self.session_alive = alive;
-        self.update();
-    }
 }
 
 impl EventHandle for SessionTab {
@@ -94,18 +86,30 @@ impl EventHandle for SessionTab {
 
     #[inline]
     fn listen(&self) -> Vec<EventType> {
-        vec![EventType::MasterReady, EventType::TitleChanged]
+        vec![
+            EventType::TitleChanged,
+            EventType::ThemeChanged,
+            EventType::FontChanged,
+        ]
     }
 
     #[inline]
     fn handle(&mut self, evt: &Events) {
         match evt {
-            Events::MasterReay => {
-                self.set_session_alive(true);
-            }
             Events::TitleChanged(title) => {
                 self.session_label.set_text(title);
             }
+
+            Events::ThemeChanged => {
+                self.set_border_color(TermdotConfig::active_session());
+                self.set_background(TermdotConfig::background());
+                self.session_label.set_color(TermdotConfig::foreground());
+            }
+
+            Events::FontChanged => {
+                self.session_label.set_font(TermdotConfig::font());
+            }
+
             _ => {}
         }
     }

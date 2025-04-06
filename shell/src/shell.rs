@@ -1,28 +1,31 @@
-use crate::command::execute_status::ShExecuteStatus;
-use crate::command::internal::cls::CmdCls;
-use crate::command::internal::log::CmdLog;
-use crate::command::internal::version::CmdVersion;
-use crate::command::internal::{IInternalCommand, InternalCommandHnd};
-use crate::command::{Command, internal::InternalCommand};
-use crate::utils::ansi_string::godot::AnsiString;
-use crate::utils::ansi_string::rust::ShAnsiString;
-use crate::utils::charmap::*;
-use crate::utils::escape_sequence::ESC0M;
+use crate::{
+    command::{
+        Command,
+        execute_status::ShExecuteStatus,
+        internal::{
+            IInternalCommand, InternalCommand, InternalCommandHnd, cls::CmdCls, log::CmdLog,
+            version::CmdVersion,
+        },
+    },
+    utils::{
+        ansi_string::{godot::AnsiString, rust::ShAnsiString},
+        charmap::*,
+    },
+};
 use ahash::AHashMap;
+use common::escape_sequence::*;
 use derivative::Derivative;
 use godot::{
     builtin::{GString, Vector2i, array},
     obj::Gd,
 };
 use ipc::ipc_event::IpcEvent;
-use termio::emulator::core::uwchar_t;
-use std::cell::RefCell;
-use std::cmp::Ordering;
-use std::ptr::NonNull;
-use std::{collections::VecDeque, str::FromStr};
-use termio::emulator::emulation::{Emulation, VT102Emulation};
-use tmui::tlib::global::SemanticExt;
-use tmui::tlib::ptr_mut;
+use std::{cell::RefCell, cmp::Ordering, collections::VecDeque, ptr::NonNull, str::FromStr};
+use termio::emulator::{
+    core::uwchar_t,
+    emulation::{Emulation, VT102Emulation},
+};
+use tmui::tlib::{global::SemanticExt, ptr_mut};
 use wchar::{wch, wchar_t};
 use widestring::WideString;
 
@@ -35,14 +38,23 @@ thread_local! {
 pub struct Shell {
     prompt: String,
     buffer: Vec<wchar_t>,
+    buffer_storage: VecDeque<wchar_t>,
     cursor: usize,
-    is_executing: bool,
     u_stack: Vec<Vec<wchar_t>>,
     d_stack: Vec<Vec<wchar_t>>,
     /// (Cols, Rows)
     cursor_origin: Vector2i,
     columns: i32,
-    argv: [wchar_t; 2],
+    replay_hint: bool,
+
+    /// Simple state machine to handle specific escape sequence functional behavior,
+    /// remaining sequences will be handled in [`emulation`](Shell::emulation):
+    ///
+    /// argv[0] == '\x1B'  =>  Escape Mode
+    /// argv[1] == `[`     =>  CSI Mode
+    /// argv[1] == `O`     =>  SS3 Mode
+    /// argv[2] !=  0      =>  Parameter added
+    argv: [wchar_t; 3],
 
     internal_command_map: AHashMap<String, InternalCommand>,
     command_map: AHashMap<String, Gd<Command>>,
@@ -77,6 +89,11 @@ impl Shell {
     }
 
     #[inline]
+    pub fn is_executing(&self) -> bool {
+        self.running_command.is_some() || self.running_internal_command.is_some()
+    }
+
+    #[inline]
     pub fn echo(&mut self, text: Gd<AnsiString>) {
         let text = text.bind().as_str().to_string();
         self.echos.extend(IpcEvent::pack_data(&text));
@@ -91,10 +108,10 @@ impl Shell {
 
     #[inline]
     pub fn sh_echo(&mut self, text: ShAnsiString) {
-        let text = text.as_str().to_string();
-        self.echos.extend(IpcEvent::pack_data(&text));
+        let text = text.as_str();
+        self.echos.extend(IpcEvent::pack_data(text));
 
-        let wstr = WideString::from_str(&text);
+        let wstr = WideString::from_str(text);
         for &c in wstr.as_slice() {
             #[allow(clippy::useless_transmute)]
             let c: wchar_t = unsafe { std::mem::transmute(c) };
@@ -115,7 +132,7 @@ impl Shell {
         let cmd = CmdVersion.boxed();
         self.internal_command_map.insert(cmd.command_name(), cmd);
 
-        let cmd = CmdLog.boxed();
+        let cmd = CmdLog::default().boxed();
         self.internal_command_map.insert(cmd.command_name(), cmd);
     }
 
@@ -194,11 +211,54 @@ impl Shell {
         self.emulation.as_mut()
     }
 
+    #[inline]
+    pub fn set_replay_hint(&mut self, replay: bool) {
+        self.replay_hint = replay
+    }
+
+    #[inline]
+    pub fn get_replay_hint(&self) -> bool {
+        self.replay_hint
+    }
+
+    #[inline]
+    pub fn echo_replay_text(&mut self) {
+        if !self.replay_hint {
+            return;
+        }
+        let text = self.replay_text();
+        self.echos
+            .extend(IpcEvent::pack_data(&text.to_string_lossy()));
+        self.replay_hint = false;
+    }
+
+    #[inline]
+    pub fn check_buffer_storage(&mut self) {
+        if self.is_executing() {
+            return;
+        }
+
+        if self.buffer_storage.len() > 1 {
+            self.replay_hint = true;
+        }
+        while let Some(c) = self.buffer_storage.pop_front() {
+            self.receive_char(c);
+        }
+        self.echo_replay_text();
+    }
+
     pub fn receive_char(&mut self, c: wchar_t) {
+        if self.is_executing() && c != CTL_SIGINT {
+            self.buffer_storage.push_back(c);
+
+            return;
+        }
+
         let oc = match c {
             CTL_ESCAPE => {
                 self.reset_argv();
                 self.argv[0] = CTL_ESCAPE;
+                self.replay_hint = false;
                 Some(c)
             }
             ASCII_LEFT_SQUARE_BRACKET => {
@@ -341,9 +401,12 @@ impl Shell {
                 self.interrupt();
                 None
             }
+            CTL_NEWLINE => None,
             CTL_CARRIAGE_RETURN => {
+                self.echo_replay_text();
+
                 #[allow(clippy::useless_transmute)]
-                let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.clone()) }; 
+                let buffer: Vec<uwchar_t> = unsafe { std::mem::transmute(self.buffer.clone()) };
                 let data = WideString::from_vec(buffer).to_string_lossy();
                 if !self.buffer.is_empty() {
                     self.u_stack.push(self.buffer.clone());
@@ -356,10 +419,22 @@ impl Shell {
                 None
             }
             _ => {
-                if is_printable(c) {
+                if self.argv[0] == CTL_ESCAPE {
+                    // SS3 escape sequences are represent by `\x1BO*`, just ignore them for now.
+                    if self.argv[1] == CTL_SS3 {
+                        None
+                    } else if c == CTL_SS3 && self.argv[1] == 0 {
+                        self.argv[1] = CTL_SS3;
+                        None
+                    } else {
+                        Some(c)
+                    }
+                } else if self.argv[0] != CTL_ESCAPE && is_printable(c) {
                     self.extend(c);
+                    Some(c)
+                } else {
+                    Some(c)
                 }
-                Some(c)
             }
         };
 
@@ -367,8 +442,24 @@ impl Shell {
             self.emulation.receive_char(c);
         }
 
-        if c != CTL_ESCAPE && c != ASCII_LEFT_SQUARE_BRACKET {
-            self.reset_argv();
+        if self.argv[1] != 0 && c != ASCII_LEFT_SQUARE_BRACKET && c != CTL_SS3 {
+            self.argv[2] = c;
+        }
+
+        // The remaining CSI and SS3 escape sequences are not specially handled for now;
+        // support will be added later as needed.
+        if self.argv[0] == CTL_ESCAPE && self.argv[1] != 0 {
+            if self.argv[1] == ASCII_LEFT_SQUARE_BRACKET {
+                // CSI Mode
+                if self.argv[2] != 0 && is_csi_final_byte(c) {
+                    self.reset_argv();
+                }
+            } else if self.argv[1] == CTL_SS3 {
+                // SS3 (Single Shift 3) Mode
+                if self.argv[2] != 0 && is_csi_final_byte(c) {
+                    self.reset_argv();
+                }
+            }
         }
     }
 }
@@ -380,7 +471,12 @@ impl Shell {
         self.buffer.insert(self.cursor, c);
         self.cursor += 1;
 
+        if self.replay_hint {
+            return;
+        }
+
         if self.cursor == self.buffer.len() {
+            #[allow(clippy::useless_transmute)]
             let c: uwchar_t = unsafe { std::mem::transmute(c) };
             let c = WideString::from_vec(vec![c]).to_string_lossy();
             self.echos.extend(IpcEvent::pack_data(&c));
@@ -415,13 +511,11 @@ impl Shell {
 
         self.next_line();
         if let Some(icmd) = self.internal_command_map.get_mut(command) {
-            self.is_executing = true;
             match icmd.start(params) {
                 ShExecuteStatus::Done => self.prompt(),
                 ShExecuteStatus::Running => self.running_internal_command = Some(icmd.as_mut()),
             }
         } else if let Some(gd) = self.command_map.get(command) {
-            self.is_executing = true;
             let gd = gd.clone();
 
             match Command::start(gd.clone(), params) {
@@ -429,7 +523,6 @@ impl Shell {
                 ShExecuteStatus::Running => self.running_command = Some(gd),
             }
         } else {
-            self.is_executing = false;
             let send_back = if data.is_empty() {
                 self.prompt.to_string()
             } else {
@@ -457,6 +550,7 @@ impl Shell {
     fn reset_argv(&mut self) {
         self.argv[0] = 0;
         self.argv[1] = 0;
+        self.argv[2] = 0;
     }
 
     fn report_cursor(&mut self) {
@@ -538,7 +632,8 @@ impl Shell {
 
                     let wstr = WideString::from_str(cmd);
                     #[allow(clippy::useless_transmute)]
-                    let buffer: Vec<wchar_t> = unsafe { std::mem::transmute(wstr.as_slice().to_vec()) };
+                    let buffer: Vec<wchar_t> =
+                        unsafe { std::mem::transmute(wstr.as_slice().to_vec()) };
                     self.buffer = buffer;
                     self.cursor = self.buffer.len();
                 }
@@ -614,7 +709,6 @@ impl Shell {
             let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
-        self.cursor_origin = self.get_cursor_position();
     }
 
     #[inline]

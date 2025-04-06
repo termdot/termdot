@@ -5,6 +5,7 @@ use crate::{
     command::execute_status::ShExecuteStatus,
     utils::{ansi_string::rust::ShAnsiString, color256::Color256},
 };
+use derivative::Derivative;
 use godot::builtin::{Array, GString};
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
@@ -14,7 +15,12 @@ lazy_static! {
     static ref LOGS: Mutex<VecDeque<ShAnsiString>> = Mutex::new(VecDeque::default());
 }
 
-pub struct CmdLog;
+#[derive(Derivative)]
+#[derivative(Default)]
+pub struct CmdLog {
+    #[derivative(Default(value = "500"))]
+    max_peek: usize,
+}
 
 impl IInternalCommand for CmdLog {
     #[inline]
@@ -30,9 +36,19 @@ impl IInternalCommand for CmdLog {
     #[inline]
     fn running(&mut self) -> ShExecuteStatus {
         let mut lock = LOGS.lock();
-        if let Some(log) = lock.pop_front() {
-            self.echo(log.append("\r\n"));
+        let mut echo = ShAnsiString::new();
+
+        let mut peeked = 0;
+        while let Some(log) = lock.pop_front() {
+            echo = echo.append(log.append("\r\n").as_str());
+            peeked += 1;
+
+            if peeked >= self.max_peek {
+                break;
+            }
         }
+
+        self.echo(echo);
         ShExecuteStatus::Running
     }
 }
@@ -44,7 +60,7 @@ impl CmdLog {
         let ansi_log = ShAnsiString::new()
             .append(&time)
             .append("[")
-            .foreground_256(Color256::BRIGHT_GREEN)
+            .foreground_256(Color256::GREEN)
             .append("INFO")
             .clear_style()
             .append("] ")
@@ -59,7 +75,7 @@ impl CmdLog {
         let ansi_log = ShAnsiString::new()
             .append(&time)
             .append("[")
-            .foreground_256(Color256::BRIGHT_YELLOW)
+            .foreground_256(Color256::YELLOW)
             .append("WARN")
             .clear_style()
             .append("] ")
@@ -74,7 +90,7 @@ impl CmdLog {
         let ansi_log = ShAnsiString::new()
             .append(&time)
             .append("[")
-            .foreground_256(Color256::BRIGHT_RED)
+            .foreground_256(Color256::RED)
             .append("ERROR")
             .clear_style()
             .append("] ")

@@ -1,9 +1,9 @@
 [
     {
-        "name": "Dark",
+        "name": "Campbell",
         "foreground": "#cccccc",
-        "background": "#121212",
-        "black": "#121212",
+        "background": "#101010",
+        "black": "#101010",
         "red": "#c50f1f",
         "green": "#13a10e",
         "yellow": "#c19c00",
@@ -12,7 +12,7 @@
         "cyan": "#3a96dd",
         "white": "#cccccc",
         "bright_foreground": "#cccccc",
-        "bright_background": "#121212",
+        "bright_background": "#101010",
         "bright_black": "#767676",
         "bright_red": "#e74756",
         "bright_green": "#16c60c",
@@ -21,5 +21,28 @@
         "bright_magenta": "#b4009e",
         "bright_cyan": "#61d6d6",
         "bright_white": "#f2f2f2"
+    },
+    {
+        "name": "Dark",
+        "foreground": "#cccccc",
+        "background": "#121212",
+        "black": "#0d0d0d",
+        "red": "#ff6b6b",
+        "green": "#50c878",
+        "yellow": "#ffd700",
+        "blue": "#6c8ebf",
+        "magenta": "#c77df3",
+        "cyan": "#88c7dc",
+        "white": "#e0e0e0",
+        "bright_foreground": "#cccccc",
+        "bright_background": "#121212",
+        "bright_black": "#5a5a5a",
+        "bright_red": "#ffa8a8",
+        "bright_green": "#98ff98",
+        "bright_yellow": "#fff3b0",
+        "bright_blue": "#89cff0",
+        "bright_magenta": "#e6b0ff",
+        "bright_cyan": "#b3e0e5",
+        "bright_white": "#fafafa"
     }
 ]

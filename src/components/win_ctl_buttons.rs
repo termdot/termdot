@@ -1,4 +1,10 @@
-use crate::{assets::Asset, components::title_bar::TITLE_BAR_HEIGHT, config::TermdotConfig};
+use crate::{
+    assets::Asset,
+    components::title_bar::TITLE_BAR_HEIGHT,
+    config::TermdotConfig,
+    events::{EventBus, EventType, Events},
+};
+use tlib::event_bus::event_handle::EventHandle;
 use tmui::{
     icons::{svg_icon::SvgIcon, svg_toggle_icon::SvgToggleIcon},
     prelude::*,
@@ -38,6 +44,8 @@ impl ObjectSubclass for WinControlButtons {
 
 impl ObjectImpl for WinControlButtons {
     fn initialize(&mut self) {
+        EventBus::register(self);
+
         self.set_halign(Align::End);
         self.set_vexpand(true);
         self.width_request(135);
@@ -95,5 +103,43 @@ impl WinControlButtons {
     #[inline]
     pub fn new() -> Box<Self> {
         Object::new(&[])
+    }
+}
+
+impl EventHandle for WinControlButtons {
+    type EventType = EventType;
+    type Event = Events;
+
+    #[inline]
+    fn listen(&self) -> Vec<Self::EventType> {
+        vec![EventType::ThemeChanged]
+    }
+
+    #[allow(clippy::single_match)]
+    #[inline]
+    fn handle(&mut self, evt: &Self::Event) {
+        match evt {
+            Events::ThemeChanged => {
+                let background = TermdotConfig::background();
+                self.set_background(background);
+
+                self.minimize
+                    .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_grey()));
+                self.minimize
+                    .register_mouse_leave(move |w| w.set_background(background));
+
+                self.maximize_restore
+                    .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_grey()));
+                self.maximize_restore
+                    .register_mouse_leave(move |w| w.set_background(background));
+
+                self.close
+                    .register_mouse_enter(|w| w.set_background(TermdotConfig::ctl_red()));
+                self.close
+                    .register_mouse_leave(move |w| w.set_background(background));
+            }
+
+            _ => {}
+        }
     }
 }

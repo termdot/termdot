@@ -10,6 +10,9 @@ pub enum EventType {
     MasterExit,
     MasterReady,
     TitleChanged,
+
+    ThemeChanged,
+    FontChanged,
 }
 impl IEventType for EventType {}
 
@@ -19,6 +22,8 @@ pub enum Events {
     MasterExit,
     MasterReay,
     TitleChanged(String),
+    ThemeChanged,
+    FontChanged,
 }
 impl IEvent for Events {
     type EventType = EventType;
@@ -30,6 +35,8 @@ impl IEvent for Events {
             Self::MasterExit => EventType::MasterExit,
             Self::MasterReay => EventType::MasterReady,
             Self::TitleChanged(..) => EventType::TitleChanged,
+            Self::ThemeChanged => EventType::ThemeChanged,
+            Self::FontChanged => EventType::FontChanged,
         }
     }
 }

@@ -25,3 +25,4 @@ strum = { workspace = true }
 strum_macros = { workspace = true }
 rand = { workspace = true }
 parking_lot = { workspace = true }
+common = { workspace = true }

@@ -1,4 +1,4 @@
-use wchar::wchar_t;
+use wchar::{wch, wchar_t};
 
 /// Common character str
 pub const DOT: &str = ".";
@@ -30,12 +30,14 @@ pub const CTL_BACKSPACE: wchar_t = 0x0008;
 pub const CTL_TAB: wchar_t = 0x0009; 
 /// Line feed (LF)
 pub const CTL_NEWLINE: wchar_t = 0x000A; 
-/// Carriage return (CR)
+/// Carriage return (CR \r)
 pub const CTL_CARRIAGE_RETURN: wchar_t = 0x000D;
 /// ESC
 pub const CTL_ESCAPE: wchar_t = 0x001B; 
 /// Control+C
 pub const CTL_SIGINT: wchar_t = 0x0003;
+/// Single shift 3
+pub const CTL_SS3: wchar_t = wch!('O');
 
 // Common keyboard control character code points:
 /// ↑ `A` at the end of escape sequence \x1B[A
@@ -66,4 +68,9 @@ pub fn is_printable(ch: wchar_t) -> bool {
         
         _ => false,
     }
+}
+
+#[inline]
+pub fn is_csi_final_byte(ch: wchar_t) -> bool {
+    (0x40..=0x7E).contains(&ch)
 }

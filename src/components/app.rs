@@ -5,10 +5,7 @@ use crate::{
     pty::termdot_pty::TermdotPty,
 };
 use termio::{
-    cli::{
-        session::SessionPropsId,
-        theme::{theme_mgr::ThemeMgr, Theme},
-    },
+    cli::{session::SessionPropsId, theme::theme_mgr::ThemeMgr},
     emulator::core::terminal_emulator::TerminalEmulator,
 };
 use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after};
@@ -59,11 +56,9 @@ impl WidgetImpl for App {
             let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
             emulator.start_custom_session(ID, TermdotPty::new());
 
-            let theme = ThemeMgr::get("Dark").unwrap();
-            emulator.set_theme(ID, &theme);
-            self.set_theme(theme);
+            TermdotConfig::set_theme(ThemeMgr::get(TermdotConfig::default_theme()).unwrap());
 
-            emulator.set_font(TermdotConfig::font());
+            emulator.set_terminal_font(TermdotConfig::font());
         }
     }
 }
@@ -286,15 +281,25 @@ impl EventHandle for App {
 
     #[inline]
     fn listen(&self) -> Vec<Self::EventType> {
-        vec![EventType::HeartBeatUndetected]
+        vec![
+            EventType::HeartBeatUndetected,
+            EventType::ThemeChanged,
+            EventType::FontChanged,
+        ]
     }
 
     #[inline]
-    #[allow(clippy::single_match)]
     fn handle(&mut self, evt: &Self::Event) {
         match evt {
             Events::HeartBeatUndetected => {
                 ApplicationWindow::window().close();
+            }
+            Events::ThemeChanged => {
+                self.on_theme_changed();
+            }
+            Events::FontChanged => {
+                self.terminal_emulator
+                    .set_terminal_font(TermdotConfig::font());
             }
             _ => {}
         }
@@ -335,9 +340,12 @@ impl App {
     }
 
     #[inline]
-    pub fn set_theme(&mut self, theme: Theme) {
-        self.window().set_background(theme.background_color());
+    pub fn on_theme_changed(&mut self) {
+        let background = TermdotConfig::background();
+        self.window().set_background(background);
+        self.set_background(background);
 
-        TermdotConfig::set_theme(theme);
+        self.terminal_emulator
+            .set_theme(&TermdotConfig::get_theme());
     }
 }
