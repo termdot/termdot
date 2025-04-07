@@ -94,16 +94,18 @@ impl Shell {
     }
 
     #[inline]
-    pub fn echo(&mut self, text: Gd<AnsiString>) {
-        let text = text.bind().as_str().to_string();
-        self.echos.extend(IpcEvent::pack_data(&text));
+    pub fn echo(&mut self, mut text: Gd<AnsiString>) {
+        let t = text.bind().as_str().to_string();
+        self.echos.extend(IpcEvent::pack_data(&t));
 
-        let wstr = WideString::from_str(&text);
+        let wstr = WideString::from_str(&t);
         for &c in wstr.as_slice() {
             #[allow(clippy::useless_transmute)]
             let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
+
+        text.queue_free();
     }
 
     #[inline]
@@ -219,6 +221,30 @@ impl Shell {
     #[inline]
     pub fn get_replay_hint(&self) -> bool {
         self.replay_hint
+    }
+
+    #[inline]
+    pub fn interrupt(&mut self, echo: bool) {
+        let mut interrupted = false;
+        if let Some(running_command) = self.running_command.clone() {
+            Command::interrupting(running_command);
+
+            self.running_command = None;
+            interrupted = true;
+        }
+
+        if let Some(icm) = self.running_internal_command {
+            ptr_mut!(icm).interrupting();
+
+            self.running_internal_command = None;
+            interrupted = true;
+        }
+
+        if interrupted && echo {
+            self.sh_echo(ShAnsiString::new().append("\r\n^C"));
+        }
+
+        self.crlf_prompt();
     }
 
     #[inline]
@@ -398,7 +424,7 @@ impl Shell {
                 None
             }
             CTL_SIGINT => {
-                self.interrupt();
+                self.interrupt(true);
                 None
             }
             CTL_NEWLINE => None,
@@ -709,29 +735,5 @@ impl Shell {
             let c: wchar_t = unsafe { std::mem::transmute(c) };
             self.emulation.receive_char(c);
         }
-    }
-
-    #[inline]
-    fn interrupt(&mut self) {
-        let mut interrupted = false;
-        if let Some(running_command) = self.running_command.clone() {
-            Command::interrupting(running_command);
-
-            self.running_command = None;
-            interrupted = true;
-        }
-
-        if let Some(icm) = self.running_internal_command {
-            ptr_mut!(icm).interrupting();
-
-            self.running_internal_command = None;
-            interrupted = true;
-        }
-
-        if interrupted {
-            self.sh_echo(ShAnsiString::new().append("\r\n^C"));
-        }
-
-        self.crlf_prompt();
     }
 }

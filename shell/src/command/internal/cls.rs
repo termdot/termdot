@@ -12,7 +12,7 @@ impl IInternalCommand for CmdCls {
 
     fn start(&mut self, _: Array<GString>) -> ShExecuteStatus {
         let echo = ShAnsiString::default()
-            .append("\x1B[2J")
+            .clear_entire_screen()
             .cursor_move_to(1, 1);
         self.echo(echo);
 

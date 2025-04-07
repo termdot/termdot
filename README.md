@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="src/resources/termdot_grey_icon.png" alt="Termdot Grey Icon" />
+</p>
+
 <h1 align="center"> Termdot </h1>
 
 <div align="center" >
@@ -6,22 +10,19 @@
 
 </div>
 
-Terminal style external command executor for Godot.
+**_Terminal built for Godot._**
 
-Supports control characters and escape sequences of XTerm, VT102.
+## Features
+
+- **Runtime command execution console** – interact with the game during runtime.
+- **Command history caching and auto-completion** – recall and auto-fill previous inputs.
+- **Command scripting with execution status handling** – write reusable scripts and track results.
+- **Extensible and easily integrated** – fits smoothly into existing projects.
+- **Log and data inspection windows** – view logs and runtime data visually.
 
 <!-- ![Termdot Display](src/resources/termdot_display.gif) -->
 
 ![Termdot Image](src/resources/termdot.png)
-
-## Features
-
-- Terminal-style command execution within Godot.
-- Commands history cache, auto command completion.
-- Supports formatted text output with ANSI-style escape sequences.
-- Enables command scripting with execution status handling.
-- Designed for extensibility and integration into existing projects.
-- Additional log output viewing window.
 
 ## Usage
 

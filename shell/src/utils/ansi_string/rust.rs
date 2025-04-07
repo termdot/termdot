@@ -180,6 +180,18 @@ impl ShAnsiString {
     }
 
     #[inline]
+    pub fn append_fixed_text(mut self, text: &str, len: usize) -> Self {
+        let text = if text.len() > len {
+            text.chars().take(len).collect()
+        } else {
+            format!("{:<width$}", text, width = len)
+        };
+
+        self.builder.push_str(self.fill_color(&text).as_str());
+
+        self
+    }
+    #[inline]
     pub fn cursor_move_to(mut self, line: i32, column: i32) -> Self {
         let changed = CursorPositionHelper::cursor_move(line, column);
         self.builder.push_str(changed.as_str());
@@ -357,6 +369,12 @@ impl ShAnsiString {
     #[inline]
     pub fn clear_line(mut self) -> Self {
         self.builder.push_str(ESC2K);
+        self
+    }
+
+    #[inline]
+    pub fn clear_entire_screen(mut self) -> Self {
+        self.builder.push_str(ESC2J);
         self
     }
 

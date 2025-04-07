@@ -31,7 +31,7 @@ pub fn terminal_version() -> &'static str {
 }
 
 #[cfg(windows_platform)]
-pub const APP_PATH: &str = "res://addons/termdot/termdot.exe";
+pub const APP_PATH: [&str; 2] = ["res://addons/termdot/termdot.exe", "res://termdot.exe"];
 #[cfg(macos_platform)]
 pub const APP_PATH: &str = "";
 #[cfg(free_unix)]
@@ -56,6 +56,11 @@ pub struct Termdot {
     /// When action `run_action` detected pressed, run the external terminal if it's not running.
     #[init(val = GString::from_str("termdot_run").unwrap())]
     run_action: GString,
+
+    #[export(range = (1., 60.))]
+    #[init(val = 60)]
+    command_ticks_per_second: u32,
+    accumulator: f64,
 
     ipc_context: Option<IpcContext>,
 
@@ -103,8 +108,12 @@ impl INode for Termdot {
         }
     }
 
-    fn process(&mut self, _delta: f64) {
-        self.shell.process_running_command();
+    fn process(&mut self, delta: f64) {
+        self.accumulator += delta;
+        if self.accumulator >= 1. / self.command_ticks_per_second as f64 {
+            self.accumulator = 0.;
+            self.shell.process_running_command();
+        }
 
         if self.ipc_context.is_none() {
             return;
@@ -121,6 +130,7 @@ impl INode for Termdot {
                 IpcEvent::Exit => {
                     self.child = None;
                     self.shell.reset();
+                    self.shell.interrupt(false);
                 }
                 IpcEvent::TerminalVersion(data, len) => self.set_terminal_version(data, len),
                 IpcEvent::SetTerminalSize(cols, rows) => self.shell.set_terminal_size(cols, rows),
@@ -245,12 +255,22 @@ impl Termdot {
 
     fn start_sub_process(&mut self) {
         let id = SHARED_ID.load(std::sync::atomic::Ordering::Relaxed);
-        let path = ProjectSettings::singleton()
-            .globalize_path(APP_PATH)
-            .to_string();
-        match std::process::Command::new(path).arg(id.to_string()).spawn() {
-            Ok(c) => self.child = Some(c),
-            Err(e) => godot_error!("Run external app failed, e = {:?}", e),
+        for app_path in APP_PATH {
+            let path = ProjectSettings::singleton()
+                .globalize_path(app_path)
+                .to_string();
+            match std::process::Command::new(path).arg(id.to_string()).spawn() {
+                Ok(c) => {
+                    self.child = Some(c);
+                    break;
+                }
+                Err(_) => {}
+            }
+        }
+
+        if self.child.is_none() {
+            godot_error!("Run external app failed, cant find the external application.");
+            return;
         }
 
         self.send_ipc_event(IpcEvent::Ready);

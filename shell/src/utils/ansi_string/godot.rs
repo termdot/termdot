@@ -156,6 +156,21 @@ impl AnsiString {
     }
 
     #[func]
+    pub fn append_fixed_text(&mut self, text: GString, len: u32) -> Gd<Self> {
+        let len = len as usize;
+        let text = text.to_string();
+        let text = if text.len() > len {
+            text.chars().take(len).collect()
+        } else {
+            format!("{:<width$}", text, width = len)
+        };
+
+        self.builder.push_str(self.fill_color(&text).as_str());
+
+        self.to_gd()
+    }
+
+    #[func]
     pub fn cursor_move_to(&mut self, line: i32, column: i32) -> Gd<Self> {
         let changed = CursorPositionHelper::cursor_move(line, column);
         self.builder.push_str(changed.as_str());
@@ -291,6 +306,12 @@ impl AnsiString {
     #[func]
     pub fn clear_line(&mut self) -> Gd<Self> {
         self.builder.push_str(ESC2K);
+        self.to_gd()
+    }
+
+    #[func]
+    pub fn clear_entire_screen(&mut self) -> Gd<Self> {
+        self.builder.push_str(ESC2J);
         self.to_gd()
     }
 
