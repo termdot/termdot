@@ -1,12 +1,12 @@
 <p align="center">
-    <img src="src/resources/termdot_grey_icon.png" alt="Termdot Grey Icon" />
+    <img src="src/resources/termdot_icon.png" alt="Termdot Grey Icon" />
 </p>
 
 <h1 align="center"> Termdot </h1>
 
 <div align="center" >
 
-![Language](https://img.shields.io/badge/Language-Rust-FFF7E9) ![License](https://img.shields.io/badge/License-MIT-B9E0FF) ![Support](https://img.shields.io/badge/Support-Windows-CD97F9)
+![Language](https://img.shields.io/badge/Language-Rust-FFF7E9) ![License](https://img.shields.io/badge/License-MIT-B9E0FF) ![Support](https://img.shields.io/badge/Support-Windows-CD97F9)[![Join Discord](https://img.shields.io/discord/1358801061414047774?label=Discord&logo=discord&style=flat)](https://discord.gg/phg7YvSStX)
 
 </div>
 
