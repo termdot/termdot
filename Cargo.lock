@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "rust-embed",
 ]
@@ -332,9 +332,9 @@ dependencies = [
 
 [[package]]
 name = "bstr"
-version = "1.11.3"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "531a9155a481e2ee699d4f98f43c0ca4ff8ee1bfd55c31e9e98fb29d2b176fe0"
+checksum = "234113d19d0d7d613b40e86fb654acf958910802bcceab913a4f9e7cda03b1a4"
 dependencies = [
  "memchr",
  "serde",
@@ -547,7 +547,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "ahash 0.8.11",
  "getset",
@@ -890,7 +890,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "bitvec",
  "cli",
@@ -1826,7 +1826,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "asset",
  "chrono",
@@ -1940,7 +1940,7 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#f1fd4acf56d0cae989a6409e7f943e93eb3ff721"
+source = "git+https://github.com/toocol/tmui#8f95d5adf7ae0c11abaa744f95e0718e30eff4ba"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1988,9 +1988,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff70ce3e48ae43fa075863cef62e8b43b71a4f2382229920e0df362592919430"
+checksum = "3be647b768db090acb35d5ec5db2b0e1f1de11133ca123b9eacf5137868f892a"
 dependencies = [
  "adler2",
 ]
@@ -2340,7 +2340,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "asset",
  "cli",
@@ -3301,7 +3301,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#39fbbdb8d8a57bb0c832950aaa6dd510a1dcba69"
+source = "git+https://github.com/toocol/termio#bba844d87b1cd39c36607f907e230818c8bf6018"
 dependencies = [
  "cli",
  "emulator",
@@ -3406,7 +3406,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tipc"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#f1fd4acf56d0cae989a6409e7f943e93eb3ff721"
+source = "git+https://github.com/toocol/tmui#8f95d5adf7ae0c11abaa744f95e0718e30eff4ba"
 dependencies = [
  "lazy_static",
  "log",
@@ -3424,7 +3424,7 @@ dependencies = [
 [[package]]
 name = "tlib"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#f1fd4acf56d0cae989a6409e7f943e93eb3ff721"
+source = "git+https://github.com/toocol/tmui#8f95d5adf7ae0c11abaa744f95e0718e30eff4ba"
 dependencies = [
  "ahash 0.8.11",
  "bitflags 2.9.0",
@@ -3452,7 +3452,7 @@ dependencies = [
 [[package]]
 name = "tmui"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#f1fd4acf56d0cae989a6409e7f943e93eb3ff721"
+source = "git+https://github.com/toocol/tmui#8f95d5adf7ae0c11abaa744f95e0718e30eff4ba"
 dependencies = [
  "ahash 0.8.11",
  "beep",

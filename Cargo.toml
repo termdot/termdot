@@ -6,13 +6,16 @@ name = "termdot"
 version = "0.0.1"
 edition = "2021"
 
+[features]
+default = []
+x11 = ["ipc/x11", "tmui/x11"]
+
 [[bin]]
 name = "termdot"
 path = "src/main.rs"
 
 [workspace.dependencies]
 godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
-tmui = { git = "https://github.com/toocol/tmui" }
 termio = { git = "https://github.com/toocol/termio" }
 
 common = { path = "common/" }
@@ -35,7 +38,7 @@ strum_macros = "0.26.3"
 parking_lot = "0.12.3"
 
 [dependencies]
-tmui = { workspace = true }
+tmui = { git = "https://github.com/toocol/tmui" }
 termio = { workspace = true }
 ipc = { workspace = true }
 log4rs = { workspace = true }

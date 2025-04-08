@@ -5,6 +5,10 @@ edition = "2024"
 
 build = "build.rs"
 
+[features]
+default = []
+x11 = ["ipc/x11", "tmui/x11"]
+
 [lib]
 crate-type = ["cdylib"]
 
@@ -12,9 +16,9 @@ crate-type = ["cdylib"]
 cfg_aliases = "0.2.0"
 
 [dependencies]
+tmui = { git = "https://github.com/toocol/tmui" }
 godot = { workspace = true }
 termio = { workspace = true }
-tmui = { workspace = true }
 ipc = { workspace = true }
 ahash = { workspace = true }
 wchar = { workspace = true }

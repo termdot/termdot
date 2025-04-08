@@ -3,8 +3,12 @@ name = "ipc"
 version = "0.0.1"
 edition = "2024"
 
+[features]
+default = []
+x11 = ["tmui/x11"]
+
 [dependencies]
-tmui = { workspace = true }
+tmui = { git = "https://github.com/toocol/tmui" }
 godot = { workspace = true }
 
 log = { workspace = true }
