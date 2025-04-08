@@ -626,7 +626,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "lazy_static",
  "log",
@@ -1665,7 +1665,7 @@ dependencies = [
 
 [[package]]
 name = "ipc"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "godot",
  "log",
@@ -2993,7 +2993,7 @@ dependencies = [
 
 [[package]]
 name = "shell"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "ahash 0.8.11",
  "cfg_aliases 0.2.1",
@@ -3288,7 +3288,7 @@ dependencies = [
 
 [[package]]
 name = "termdot"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "common",
  "ipc",

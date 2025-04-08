@@ -181,16 +181,19 @@ impl INode for Termdot {
 #[godot_api]
 impl Termdot {
     #[func]
+    /// log level info, display by internal command `log`
     pub fn info(log: GString) {
         CmdLog::info(log.to_string());
     }
 
     #[func]
+    /// log level warn, display by internal command `log`
     pub fn warn(log: GString) {
         CmdLog::warn(log.to_string());
     }
 
     #[func]
+    /// log level error, display by internal command `log`
     pub fn error(log: GString) {
         CmdLog::error(log.to_string());
     }
