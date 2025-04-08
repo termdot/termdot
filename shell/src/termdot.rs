@@ -33,7 +33,7 @@ pub fn terminal_version() -> &'static str {
 #[cfg(windows_platform)]
 pub const APP_PATH: [&str; 2] = ["res://addons/termdot/termdot.exe", "res://termdot.exe"];
 #[cfg(macos_platform)]
-pub const APP_PATH: &str = "";
+pub const APP_PATH: [&str; 1] = [""];
 #[cfg(free_unix)]
 pub const APP_PATH: &str = "";
 
@@ -254,7 +254,13 @@ impl Termdot {
         }
     }
 
+    #[allow(unreachable_code)]
     fn start_sub_process(&mut self) {
+        #[cfg(macos_platform)]
+        {
+            godot_warn!("Termdot is currently not supported on macOS.");
+            return;
+        }
         let id = SHARED_ID.load(std::sync::atomic::Ordering::Relaxed);
         for app_path in APP_PATH {
             let path = ProjectSettings::singleton()
