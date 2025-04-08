@@ -35,7 +35,7 @@ pub const APP_PATH: [&str; 2] = ["res://addons/termdot/termdot.exe", "res://term
 #[cfg(macos_platform)]
 pub const APP_PATH: [&str; 1] = [""];
 #[cfg(free_unix)]
-pub const APP_PATH: &str = "";
+pub const APP_PATH: [&str; 1] = [""];
 
 #[derive(GodotClass)]
 /// Main Godot node for plugin status management, and interactive with users.
@@ -259,6 +259,11 @@ impl Termdot {
         #[cfg(macos_platform)]
         {
             godot_warn!("Termdot is currently not supported on macOS.");
+            return;
+        }
+        #[cfg(free_unix)]
+        {
+            godot_warn!("Termdot is currently not supported on Linux.");
             return;
         }
         let id = SHARED_ID.load(std::sync::atomic::Ordering::Relaxed);
