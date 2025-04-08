@@ -106,7 +106,7 @@ impl Pty for TermdotPty {
         };
 
         if let Some(last_heart_beat) = self.last_heart_beat {
-            if last_heart_beat.elapsed().as_millis() > HEART_BEAT_INTERVAL * 3 {
+            if last_heart_beat.elapsed().as_millis() > HEART_BEAT_INTERVAL * 10 {
                 EventBus::push(Events::HeartBeatUndetected);
                 return vec![];
             }

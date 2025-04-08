@@ -58,6 +58,7 @@ pub struct Termdot {
     run_action: GString,
 
     #[export(range = (1., 60.))]
+    /// Commands execution frequency
     #[init(val = 60)]
     command_ticks_per_second: u32,
     accumulator: f64,
