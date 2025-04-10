@@ -36,6 +36,7 @@ rust-embed = { version = "8.3.0", features = [
 strum = "0.26.3"
 strum_macros = "0.26.3"
 parking_lot = "0.12.3"
+gag = "1.0.0"
 
 [dependencies]
 tmui = { git = "https://github.com/toocol/tmui" }

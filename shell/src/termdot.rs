@@ -1,5 +1,6 @@
 use crate::{
     command::{Command, internal::log::CmdLog},
+    consoel_captures::ConsoleCaptures,
     shell::Shell,
 };
 use godot::{
@@ -65,6 +66,9 @@ pub struct Termdot {
 
     ipc_context: Option<IpcContext>,
 
+    #[init(val = ConsoleCaptures::new())]
+    console_captures: ConsoleCaptures,
+
     shell: Shell,
     child: Option<Child>,
     #[init(val = Instant::now())]
@@ -115,6 +119,8 @@ impl INode for Termdot {
             self.accumulator = 0.;
             self.shell.process_running_command();
         }
+
+        self.process_console_captures();
 
         if self.ipc_context.is_none() {
             return;
@@ -170,7 +176,6 @@ impl INode for Termdot {
             | NodeNotification::UNPARENTED
             | NodeNotification::WM_CLOSE_REQUEST
             | NodeNotification::CRASH => {
-                godot_print!("Window closed");
                 self.termdot_exit();
             }
             _ => {}
@@ -308,6 +313,40 @@ impl Termdot {
         if self.last_heart_beat.elapsed().as_millis() >= HEART_BEAT_INTERVAL {
             self.last_heart_beat = Instant::now();
             self.send_ipc_event(IpcEvent::HeartBeat);
+        }
+    }
+
+    fn process_console_captures(&mut self) {
+        let stdout = self.console_captures.read_stdout();
+        if !stdout.is_empty() {
+            for line in stdout.split("\n") {
+                if line == "\r" || line.is_empty() {
+                    continue;
+                }
+
+                CmdLog::info(line.to_string());
+            }
+        }
+
+        let stderr = self.console_captures.read_stderr();
+        if !stderr.is_empty() {
+            for line in stderr.split("\n") {
+                if line == "\r" || line.is_empty() {
+                    continue;
+                }
+
+                if line.contains("push_warning") || line.contains("push_error") {
+                    continue;
+                }
+
+                if line.contains("WARNING: ") {
+                    let line = line.replace("WARNING: ", "");
+                    CmdLog::warn(line.to_string());
+                } else {
+                    let line = line.replace("ERROR: ", "");
+                    CmdLog::error(line.to_string());
+                }
+            }
         }
     }
 }

@@ -54,6 +54,20 @@ impl IInternalCommand for CmdLog {
 }
 
 impl CmdLog {
+    pub fn stdout(log: String) {
+        let ansi_log = ShAnsiString::new().append(&log);
+
+        LOGS.lock().push_back(ansi_log);
+    }
+
+    pub fn stderr(log: String) {
+        let ansi_log = ShAnsiString::new()
+            .foreground_256(Color256::RED)
+            .append(&log);
+
+        LOGS.lock().push_back(ansi_log);
+    }
+
     pub fn info(log: String) {
         let time = format!("[{}] ", Timestamp::now().format_string(None));
 
