@@ -4,7 +4,7 @@ use crate::{
     shell::Shell,
 };
 use godot::{
-    classes::{InputEvent, InputMap, ProjectSettings, notify::NodeNotification},
+    classes::{Engine, InputEvent, InputMap, ProjectSettings, notify::NodeNotification},
     prelude::*,
 };
 use ipc::{
@@ -41,7 +41,6 @@ pub const APP_PATH: [&str; 1] = [""];
 #[derive(GodotClass)]
 /// Main Godot node for plugin status management, and interactive with users.
 #[class(init, base = Node)]
-#[allow(dead_code)]
 pub struct Termdot {
     #[export]
     /// Host name of shell, will represent as `host_name> `.
@@ -62,12 +61,17 @@ pub struct Termdot {
     /// Commands execution frequency
     #[init(val = 60)]
     command_ticks_per_second: u32,
-    accumulator: f64,
 
-    ipc_context: Option<IpcContext>,
+    #[export]
+    #[init(val = true)]
+    auto_output_captures: bool,
+
+    accumulator: f64,
 
     #[init(val = ConsoleCaptures::new())]
     console_captures: ConsoleCaptures,
+
+    ipc_context: Option<IpcContext>,
 
     shell: Shell,
     child: Option<Child>,
@@ -98,7 +102,7 @@ impl INode for Termdot {
             }
         }
 
-        let id = SnowflakeGuidGenerator::next_id().unwrap();
+        let id = SnowflakeGuidGenerator::next_id().expect("Get guid failed.");
         SHARED_ID.store(id, std::sync::atomic::Ordering::Release);
 
         self.ipc_context = IpcContext::master();
@@ -165,17 +169,19 @@ impl INode for Termdot {
     }
 
     fn exit_tree(&mut self) {
-        godot_print!("Exit tree");
-        self.termdot_exit();
+        if !Engine::singleton().is_editor_hint() {
+            self.termdot_exit();
+        }
     }
 
-    #[allow(clippy::single_match)]
     fn on_notification(&mut self, what: NodeNotification) {
         match what {
-            NodeNotification::EXIT_TREE
-            | NodeNotification::UNPARENTED
-            | NodeNotification::WM_CLOSE_REQUEST
-            | NodeNotification::CRASH => {
+            NodeNotification::EXIT_TREE | NodeNotification::UNPARENTED => {
+                if !Engine::singleton().is_editor_hint() {
+                    self.termdot_exit();
+                }
+            }
+            NodeNotification::WM_CLOSE_REQUEST | NodeNotification::CRASH => {
                 self.termdot_exit();
             }
             _ => {}
@@ -279,12 +285,9 @@ impl Termdot {
             let path = ProjectSettings::singleton()
                 .globalize_path(app_path)
                 .to_string();
-            match std::process::Command::new(path).arg(id.to_string()).spawn() {
-                Ok(c) => {
-                    self.child = Some(c);
-                    break;
-                }
-                Err(_) => {}
+            if let Ok(c) = std::process::Command::new(path).arg(id.to_string()).spawn() {
+                self.child = Some(c);
+                break;
             }
         }
 
@@ -317,6 +320,10 @@ impl Termdot {
     }
 
     fn process_console_captures(&mut self) {
+        if !self.auto_output_captures {
+            return;
+        }
+
         let stdout = self.console_captures.read_stdout();
         if !stdout.is_empty() {
             for line in stdout.split("\n") {

@@ -19,16 +19,18 @@
 - **Command scripting with execution status handling** – write reusable scripts and track results.
 - **Extensible and easily integrated** – fits smoothly into existing projects.
 - **Log and data inspection windows** – view logs and runtime data visually.
+- **Capture Godot's standard output and errors with timestamps automatically** - inspect error data on release export.
 
 <!-- ![Termdot Display](src/resources/termdot_display.gif) -->
 
 ![Termdot Image](https://raw.githubusercontent.com/termdot/termdot/master/src/resources/termdot.png)
+![Termdot Log Capture](https://raw.githubusercontent.com/termdot/termdot/master/src/resources/log_capture.png)
 
 ## Usage
 
 ### Installation
 
-1. Copy the `addons/termdot` folder into your project's `addons` directory.
+1. Search **Termdot** in Godot's Asset Lib to install, or just copy the `addons/termdot` folder into your project's `addons` directory.
 2. In your scene, add a `Termdot` node. This is the main control node for the plugin.
 3. Under the `Termdot` node, add `Command` nodes (each `Command` node must be a child of `Termdot`).
 4. Write your own command scripts to define behavior.
@@ -63,6 +65,11 @@ func _running() -> int:
     # ExecuteStatus.RUNNING
 ```
 
+### Use in release export
+
+- Ensure the plugin folder (addons/termdot) is in the same directory as your game executable;
+- Alternatively, copy the files (shell.dll, winpty.dll, termdot.exe) from the plugin folder (addons/termdot) to the same directory as your game executable.
+
 ## Builtin Functions
 
 | Key              | Function                                       |
@@ -73,11 +80,11 @@ func _running() -> int:
 | Control + Insert | Copy selected text to clipboard from terminal. |
 | Shift + Insert   | Paste text from clipboard to terminal.         |
 
-| Command | Function                                                                    |
-| ------- | --------------------------------------------------------------------------- |
-| version | Show current Termdot version.                                               |
-| cls     | Clear entire screen.                                                        |
-| log     | Display logs recorded by Termdot.log(), Termdot.warn(), and Termdot.error() |
+| Command | Function                                                                                                                                                    |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| version | Show current Termdot version.                                                                                                                               |
+| cls     | Clear entire screen.                                                                                                                                        |
+| log     | Termdot will capture Godot's standard output and errors automatically, and also display logs recorded by Termdot.log(), Termdot.warn(), and Termdot.error() |
 
 ## Nodes Details
 
@@ -113,6 +120,11 @@ Main Godot node for plugin status management, and interactive with users.
   - **Range**: 1 to 60 (inclusive)
   - **Default Value**: `60`
   - **Usage**: Adjust this setting to control how often commands are processed, providing flexibility for more or less frequent updates.
+
+- **`auto_output_captures` (`bool`)**:
+  - **Description**: Capture Godot's standard output and errors automatically or not.
+  - **Default Value**: `true`
+  - **Usage**: If true, Termdot will capture Godot's standard output and errors automatically with timestamp.
 
 These fields allow for a high degree of customization in how the plugin behaves within your Godot project, enabling tailored interaction with the external terminal.
 

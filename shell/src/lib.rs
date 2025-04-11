@@ -1,5 +1,6 @@
 pub mod command;
 pub mod consoel_captures;
+pub mod plugin;
 pub mod shell;
 pub mod termdot;
 pub mod utils;
