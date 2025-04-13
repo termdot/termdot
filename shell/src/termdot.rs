@@ -8,8 +8,7 @@ use godot::{
     prelude::*,
 };
 use ipc::{
-    HEART_BEAT_INTERVAL, IPC_DATA_SIZE,
-    ipc_context::{IpcContext, SHARED_ID},
+    HEART_BEAT_INTERVAL, IPC_DATA_SIZE, ipc_channel::IpcChannel, ipc_context::IpcContext,
     ipc_event::IpcEvent,
 };
 use std::{cell::RefCell, process::Child, str::FromStr, time::Instant};
@@ -72,6 +71,7 @@ pub struct Termdot {
     console_captures: ConsoleCaptures,
 
     ipc_context: Option<IpcContext>,
+    ipc_channel: Option<IpcChannel>,
 
     shell: Shell,
     child: Option<Child>,
@@ -102,42 +102,44 @@ impl INode for Termdot {
             }
         }
 
-        let id = SnowflakeGuidGenerator::next_id().expect("Get guid failed.");
-        SHARED_ID.store(id, std::sync::atomic::Ordering::Release);
-
-        self.ipc_context = IpcContext::master();
-        if self.ipc_context.is_none() {
-            godot_warn!("[Termdot::ready] Create master `IpcContext` failed.")
-        }
-
         self.shell.set_prompt(&self.host_name);
 
-        if self.auto_run {
-            self.start_sub_process();
+        self.ipc_context = IpcContext::shell();
+        if self.ipc_context.is_none() {
+            return;
         }
+        self.start_session();
     }
 
     fn process(&mut self, delta: f64) {
+        // Try until the IpcContext is create successful.
+        if self.ipc_context.is_none() {
+            self.ipc_context = IpcContext::shell();
+
+            if self.ipc_context.is_some() {
+                self.start_session();
+            }
+        }
+
+        self.process_console_captures();
+
+        if self.ipc_channel.is_none() || self.ipc_context.is_none() {
+            return;
+        }
+
         self.accumulator += delta;
         if self.accumulator >= 1. / self.command_ticks_per_second as f64 {
             self.accumulator = 0.;
             self.shell.process_running_command();
         }
 
-        self.process_console_captures();
-
-        if self.ipc_context.is_none() {
-            return;
-        }
-
         self.heart_beat();
 
         self.shell.check_buffer_storage();
 
-        while let Some(evt) = self.ipc_context.as_ref().unwrap().try_recv() {
+        while let Some(evt) = self.ipc_channel.as_ref().unwrap().try_recv() {
             match evt {
                 IpcEvent::HeartBeat => {}
-                IpcEvent::Ready => self.shell.prompt(),
                 IpcEvent::Exit => {
                     self.child = None;
                     self.shell.reset();
@@ -150,7 +152,7 @@ impl INode for Termdot {
             }
         }
 
-        let ipc_context = self.ipc_context.as_ref().unwrap();
+        let ipc_context = self.ipc_channel.as_ref().unwrap();
         while let Some(echo) = self.shell.next_echo() {
             if let Err(e) = ipc_context.try_send(echo) {
                 godot_error!("[Termdot::process] Send echo failed, e = {:?}", e);
@@ -258,10 +260,10 @@ impl Termdot {
     fn termdot_exit(&mut self) {
         godot_print!("Termdot exit.");
 
-        if let Some(ctx) = self.ipc_context.as_ref() {
+        if let Some(ctx) = self.ipc_channel.as_ref() {
             let _ = ctx.try_send(IpcEvent::Exit);
         }
-        self.ipc_context = None;
+        self.ipc_channel = None;
 
         if let Some(child) = self.child.as_mut() {
             let _ = child.kill();
@@ -280,12 +282,11 @@ impl Termdot {
             godot_warn!("Termdot is currently not supported on Linux.");
             return;
         }
-        let id = SHARED_ID.load(std::sync::atomic::Ordering::Relaxed);
         for app_path in APP_PATH {
             let path = ProjectSettings::singleton()
                 .globalize_path(app_path)
                 .to_string();
-            if let Ok(c) = std::process::Command::new(path).arg(id.to_string()).spawn() {
+            if let Ok(c) = std::process::Command::new(path).spawn() {
                 self.child = Some(c);
                 break;
             }
@@ -295,13 +296,10 @@ impl Termdot {
             godot_error!("Run external app failed, cant find the external application.");
             return;
         }
-
-        self.send_ipc_event(IpcEvent::Ready);
-        self.send_ipc_event(IpcEvent::pack_host_name(&self.host_name.to_string()));
     }
 
     fn send_ipc_event(&self, event: IpcEvent) {
-        if let Some(ipc_ctx) = self.ipc_context.as_ref() {
+        if let Some(ipc_ctx) = self.ipc_channel.as_ref() {
             if let Err(e) = ipc_ctx.try_send(event) {
                 godot_error!("[Termdot::process] Send ipc event failed, e = {:?}", e);
             }
@@ -355,5 +353,25 @@ impl Termdot {
                 }
             }
         }
+    }
+
+    fn start_session(&mut self) {
+        let session_id = SnowflakeGuidGenerator::next_id().expect("Get session id failed.");
+
+        if let Some(ipc_context) = self.ipc_context.as_ref() {
+            let _ = ipc_context.try_send(session_id);
+        } else {
+            return;
+        }
+
+        self.ipc_channel = IpcChannel::shell(session_id);
+        if self.ipc_channel.is_none() {
+            godot_warn!("Create Channel failed.");
+            return;
+        }
+
+        self.send_ipc_event(IpcEvent::Ready);
+        self.send_ipc_event(IpcEvent::pack_host_name(&self.host_name.to_string()));
+        self.shell.prompt()
     }
 }

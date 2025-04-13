@@ -3,10 +3,13 @@ use tmui::tlib::{
     event_bus_init,
 };
 
+use crate::session::Session;
+
 #[repr(u8)]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum EventType {
-    HeartBeatUndetected = 0,
+    CreateSession = 0,
+    HeartBeatUndetected,
     MasterExit,
     MasterReady,
     TitleChanged,
@@ -18,6 +21,7 @@ impl IEventType for EventType {}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Events {
+    CreateSession(Session),
     HeartBeatUndetected,
     MasterExit,
     MasterReay,
@@ -31,6 +35,7 @@ impl IEvent for Events {
     #[inline]
     fn ty(&self) -> EventType {
         match self {
+            Self::CreateSession(..) => EventType::CreateSession,
             Self::HeartBeatUndetected => EventType::HeartBeatUndetected,
             Self::MasterExit => EventType::MasterExit,
             Self::MasterReay => EventType::MasterReady,

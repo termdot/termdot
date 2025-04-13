@@ -201,6 +201,8 @@ impl Shell {
     #[inline]
     pub fn reset(&mut self) {
         self.emulation.reset();
+        self.running_internal_command = None;
+        self.running_command = None;
     }
 
     #[inline]

@@ -2,7 +2,7 @@ use crate::{
     events::{EventBus, Events},
     terminal_version,
 };
-use ipc::{ipc_context::IpcContext, ipc_event::IpcEvent, HEART_BEAT_INTERVAL};
+use ipc::{ipc_channel::IpcChannel, ipc_event::IpcEvent, HEART_BEAT_INTERVAL};
 use std::{path::PathBuf, time::Instant};
 use termio::{
     cli::session::SessionPropsId,
@@ -12,6 +12,7 @@ use tlib::{log::error, object::ObjectSubclass};
 use tmui::prelude::*;
 
 #[extends(Object)]
+#[async_task(name = "AsyncTask", value = "i32")]
 pub struct TermdotPty {
     #[derivative(Default(value = "true"))]
     writeable: bool,
@@ -21,7 +22,7 @@ pub struct TermdotPty {
     utf8_mode: bool,
     running: bool,
     timeout: u32,
-    ipc_context: Option<IpcContext>,
+    ipc_context: Option<IpcChannel>,
     last_heart_beat: Option<Instant>,
 }
 
@@ -32,17 +33,10 @@ impl ObjectSubclass for TermdotPty {
 impl ObjectImpl for TermdotPty {}
 
 impl Pty for TermdotPty {
-    fn start(&mut self, _: SessionPropsId, _: &str, _: Vec<&str>, _: Vec<&str>) -> bool {
+    fn start(&mut self, id: SessionPropsId, _: &str, _: Vec<&str>, _: Vec<&str>) -> bool {
         self.running = true;
 
-        self.ipc_context = IpcContext::slave();
-
-        self.send_ipc_data(IpcEvent::SetTerminalSize(
-            self.window_size.width(),
-            self.window_size.height(),
-        ));
-        self.send_ipc_data(IpcEvent::pack_terminal_version(terminal_version()));
-        self.send_ipc_data(IpcEvent::Ready);
+        self.ipc_context = IpcChannel::terminal(id);
 
         self.running
     }
@@ -100,6 +94,10 @@ impl Pty for TermdotPty {
     }
 
     fn read_data(&mut self) -> Vec<u8> {
+        if !self.running {
+            return vec![];
+        }
+
         let ctx = match self.ipc_context.as_ref() {
             Some(ctx) => ctx,
             None => return vec![],
@@ -108,6 +106,7 @@ impl Pty for TermdotPty {
         if let Some(last_heart_beat) = self.last_heart_beat {
             if last_heart_beat.elapsed().as_millis() > HEART_BEAT_INTERVAL * 10 {
                 EventBus::push(Events::HeartBeatUndetected);
+                self.running = false;
                 return vec![];
             }
         }
@@ -115,11 +114,17 @@ impl Pty for TermdotPty {
         if let Some(evt) = ctx.try_recv() {
             match evt {
                 IpcEvent::HeartBeat => self.last_heart_beat = Some(Instant::now()),
-                IpcEvent::Ready => EventBus::push(Events::MasterReay),
+                IpcEvent::Ready => {
+                    EventBus::push(Events::MasterReay);
+                    self.send_ipc_data(IpcEvent::SetTerminalSize(
+                        self.window_size.width(),
+                        self.window_size.height(),
+                    ));
+                    self.send_ipc_data(IpcEvent::pack_terminal_version(terminal_version()));
+                }
                 IpcEvent::Exit => {
                     self.running = false;
                     self.ipc_context = None;
-                    ApplicationWindow::window().close();
                 }
                 IpcEvent::SetTerminalSize(_, _) => {}
                 IpcEvent::SendData(data, len) => {

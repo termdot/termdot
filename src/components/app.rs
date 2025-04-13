@@ -2,13 +2,11 @@ use super::title_bar::TitleBar;
 use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
-    pty::termdot_pty::TermdotPty,
+    session::Session,
 };
-use termio::{
-    cli::{session::SessionPropsId, theme::theme_mgr::ThemeMgr},
-    emulator::core::terminal_emulator::TerminalEmulator,
-};
-use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after};
+use ipc::ipc_context::IpcContext;
+use termio::{cli::constant::ProtocolType, emulator::core::terminal_emulator::TerminalEmulator};
+use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor};
 use tmui::{
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
@@ -17,7 +15,6 @@ use tmui::{
 
 #[extends(Widget, Layout(VBox))]
 #[derive(Childrenable)]
-#[run_after]
 #[iter_executor]
 #[global_watch(MouseMove, MousePressed, MouseReleased)]
 pub struct App {
@@ -25,6 +22,9 @@ pub struct App {
     title_bar: Box<TitleBar>,
     #[children]
     terminal_emulator: Box<TerminalEmulator>,
+
+    #[derivative(Default(value = "IpcContext::terminal().unwrap()"))]
+    ipc_context: IpcContext,
 
     resize_zone: bool,
     resize_pressed: bool,
@@ -47,21 +47,7 @@ impl ObjectImpl for App {
     }
 }
 
-impl WidgetImpl for App {
-    fn run_after(&mut self) {
-        const ID: SessionPropsId = 0;
-        let win = self.window();
-
-        if let Some(w) = win.find_id_mut(TerminalEmulator::id()) {
-            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
-            emulator.start_custom_session(ID, TermdotPty::new());
-
-            TermdotConfig::set_theme(ThemeMgr::get(TermdotConfig::default_theme()).unwrap());
-
-            emulator.set_terminal_font(TermdotConfig::font());
-        }
-    }
-}
+impl WidgetImpl for App {}
 
 impl GlobalWatchImpl for App {
     #[inline]
@@ -292,7 +278,7 @@ impl EventHandle for App {
     fn handle(&mut self, evt: &Self::Event) {
         match evt {
             Events::HeartBeatUndetected => {
-                ApplicationWindow::window().close();
+                // Do nothing temporary
             }
             Events::ThemeChanged => {
                 self.on_theme_changed();
@@ -329,6 +315,13 @@ enum ResizeDirection {
 impl IterExecutor for App {
     #[inline]
     fn iter_execute(&mut self) {
+        while let Some(session_id) = self.ipc_context.try_recv() {
+            EventBus::push(Events::CreateSession(Session::new(
+                session_id,
+                ProtocolType::Custom,
+            )));
+        }
+
         EventBus::process();
     }
 }
@@ -344,6 +337,7 @@ impl App {
         let background = TermdotConfig::background();
         self.window().set_background(background);
         self.set_background(background);
+        self.terminal_emulator.set_background(background);
 
         self.terminal_emulator
             .set_theme(&TermdotConfig::get_theme());

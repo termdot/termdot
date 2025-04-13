@@ -9,6 +9,7 @@ x11 = ["tmui/x11"]
 
 [dependencies]
 tmui = { git = "https://github.com/toocol/tmui" }
+termio = { workspace = true }
 godot = { workspace = true }
 
 log = { workspace = true }

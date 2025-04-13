@@ -75,6 +75,11 @@ impl WidgetImpl for SessionTab {}
 
 impl SessionTab {
     #[inline]
+    pub fn new() -> Box<Self> {
+        Object::new(&[])
+    }
+
+    #[inline]
     pub fn set_session_name(&mut self, name: &str) {
         self.session_label.set_text(name);
     }

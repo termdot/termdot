@@ -3,7 +3,7 @@ use crate::{
     events::{EventBus, EventType, Events},
 };
 
-use super::{session_tab::SessionTab, win_ctl_buttons::WinControlButtons};
+use super::{session_bar::SessionBar, win_ctl_buttons::WinControlButtons};
 use tlib::{event_bus::event_handle::EventHandle, global_watch};
 use tmui::{prelude::*, tlib::object::ObjectSubclass};
 
@@ -14,7 +14,7 @@ pub const TITLE_BAR_HEIGHT: i32 = 35;
 #[global_watch(MouseMove)]
 pub struct TitleBar {
     #[children]
-    session_tab: Box<SessionTab>,
+    session_bar: Box<SessionBar>,
     #[children]
     win_control_buttons: Box<WinControlButtons>,
 
@@ -38,6 +38,9 @@ impl ObjectImpl for TitleBar {
 
         self.set_borders(0., 0., 1., 0.);
         self.set_border_color(TermdotConfig::separator());
+
+        self.enable_bubble(EventBubble::MOUSE_PRESSED);
+        self.enable_bubble(EventBubble::MOUSE_RELEASED);
     }
 }
 

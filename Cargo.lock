@@ -1696,6 +1696,7 @@ version = "0.0.3"
 dependencies = [
  "godot",
  "log",
+ "termio",
  "tmui",
 ]
 
