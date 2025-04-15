@@ -3,7 +3,7 @@ members = ["shell", "ipc", "benchmark", "common"]
 
 [package]
 name = "termdot"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 
 [features]

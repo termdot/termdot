@@ -1,6 +1,6 @@
 [package]
 name = "shell"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2024"
 
 build = "build.rs"

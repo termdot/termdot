@@ -104,6 +104,10 @@ impl INode for Termdot {
 
         self.shell.set_prompt(&self.host_name);
 
+        if self.auto_run {
+            self.start_sub_process();
+        }
+
         self.ipc_context = IpcContext::shell();
         if self.ipc_context.is_none() {
             return;
@@ -258,8 +262,6 @@ impl Termdot {
     }
 
     fn termdot_exit(&mut self) {
-        godot_print!("Termdot exit.");
-
         if let Some(ctx) = self.ipc_channel.as_ref() {
             let _ = ctx.try_send(IpcEvent::Exit);
         }
