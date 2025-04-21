@@ -1,5 +1,5 @@
 use termio::{
-    cli::{constant::ProtocolType, theme::theme_mgr::ThemeMgr},
+    cli::{constant::ProtocolType, scheme::color_scheme_mgr::ColorSchemeMgr},
     emulator::core::terminal_emulator::TerminalEmulator,
 };
 use tlib::event_bus::event_handle::EventHandle;
@@ -28,9 +28,12 @@ impl ObjectImpl for SessionBar {
     fn initialize(&mut self) {
         EventBus::register(self);
 
-        self.set_hexpand(true);
         self.set_vexpand(true);
         self.set_margin_left(20);
+    }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
     }
 }
 
@@ -62,7 +65,7 @@ impl EventHandle for SessionBar {
                     }
 
                     TermdotConfig::set_theme(
-                        ThemeMgr::get(TermdotConfig::default_theme()).unwrap(),
+                        ColorSchemeMgr::get(TermdotConfig::default_color_scheme()).unwrap(),
                     );
                     emulator.set_terminal_font(TermdotConfig::font());
                 }

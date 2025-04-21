@@ -1,9 +1,11 @@
+use super::{
+    sessions::{new_tab_button::NewTabButton, SessionBar},
+    win_ctl_buttons::WinControlButtons,
+};
 use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
-
-use super::{session_bar::SessionBar, win_ctl_buttons::WinControlButtons};
 use tlib::{event_bus::event_handle::EventHandle, global_watch};
 use tmui::{prelude::*, tlib::object::ObjectSubclass};
 
@@ -14,9 +16,11 @@ pub const TITLE_BAR_HEIGHT: i32 = 35;
 #[global_watch(MouseMove)]
 pub struct TitleBar {
     #[children]
-    session_bar: Box<SessionBar>,
+    session_bar: Tr<SessionBar>,
     #[children]
-    win_control_buttons: Box<WinControlButtons>,
+    win_control_buttons: Tr<WinControlButtons>,
+    #[children]
+    new_tab_button: Tr<NewTabButton>,
 
     pressed: bool,
     mouse_pos: Point,
@@ -41,6 +45,10 @@ impl ObjectImpl for TitleBar {
 
         self.enable_bubble(EventBubble::MOUSE_PRESSED);
         self.enable_bubble(EventBubble::MOUSE_RELEASED);
+    }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
     }
 }
 
@@ -84,8 +92,8 @@ impl WidgetImpl for TitleBar {
 
 impl TitleBar {
     #[inline]
-    pub fn new() -> Box<Self> {
-        Object::new(&[])
+    pub fn new() -> Tr<Self> {
+        Self::new_alloc()
     }
 }
 

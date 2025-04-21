@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 pub mod assets;
 pub mod components;
 pub mod config;
@@ -8,8 +8,8 @@ pub mod session;
 
 use assets::Asset;
 use components::app::App;
-use config::font_helper::load_fonts;
-use termio::cli::theme::theme_mgr::ThemeMgr;
+use config::{font_helper::load_fonts, TermdotConfig};
+use termio::cli::scheme::color_scheme_mgr::ColorSchemeMgr;
 use tmui::{
     application::Application, application_window::ApplicationWindow, graphics::icon::Icon,
     prelude::*,
@@ -30,7 +30,7 @@ fn main() {
 
     set_panic_hook();
 
-    ThemeMgr::loads::<Asset>("themes/builtin_themes.json");
+    ColorSchemeMgr::loads::<Asset>("themes/builtin_themes.json");
     let icon = Asset::get("icons/icon.png").unwrap();
     let icon = unsafe { Icon::from_bytes(&icon.data) };
 
@@ -52,6 +52,8 @@ fn main() {
 
 fn build_ui(window: &mut ApplicationWindow) {
     load_fonts();
+
+    window.set_background(TermdotConfig::background());
 
     window.set_border_radius(10.);
 

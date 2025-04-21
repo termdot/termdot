@@ -10,8 +10,8 @@ use crate::session::Session;
 pub enum EventType {
     CreateSession = 0,
     HeartBeatUndetected,
-    MasterExit,
-    MasterReady,
+    ShellExit,
+    ShellReady,
     TitleChanged,
 
     ThemeChanged,
@@ -23,8 +23,8 @@ impl IEventType for EventType {}
 pub enum Events {
     CreateSession(Session),
     HeartBeatUndetected,
-    MasterExit,
-    MasterReay,
+    ShellExit,
+    ShellReay,
     TitleChanged(String),
     ThemeChanged,
     FontChanged,
@@ -37,8 +37,8 @@ impl IEvent for Events {
         match self {
             Self::CreateSession(..) => EventType::CreateSession,
             Self::HeartBeatUndetected => EventType::HeartBeatUndetected,
-            Self::MasterExit => EventType::MasterExit,
-            Self::MasterReay => EventType::MasterReady,
+            Self::ShellExit => EventType::ShellExit,
+            Self::ShellReay => EventType::ShellReady,
             Self::TitleChanged(..) => EventType::TitleChanged,
             Self::ThemeChanged => EventType::ThemeChanged,
             Self::FontChanged => EventType::FontChanged,

@@ -115,7 +115,7 @@ impl Pty for TermdotPty {
             match evt {
                 IpcEvent::HeartBeat => self.last_heart_beat = Some(Instant::now()),
                 IpcEvent::Ready => {
-                    EventBus::push(Events::MasterReay);
+                    EventBus::push(Events::ShellReay);
                     self.send_ipc_data(IpcEvent::SetTerminalSize(
                         self.window_size.width(),
                         self.window_size.height(),

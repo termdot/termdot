@@ -35,7 +35,7 @@ impl IpcContext {
         {
             Ok(mq) => mq,
             Err(e) => match e {
-                ShmemError::LinkExists => {
+                ShmemError::MappingIdExists => {
                     clean_hint = true;
                     MemQueueBuilder::new()
                         .build_type(BuildType::Open)

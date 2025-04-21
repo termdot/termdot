@@ -20,7 +20,7 @@ pub struct WinControlButtons {
         SvgIcon::from_bytes(file.data.as_ref())
     }"))]
     #[children]
-    minimize: Box<SvgIcon>,
+    minimize: Tr<SvgIcon>,
 
     #[derivative(Default(value = "{
         let maximize = Asset::get(\"icons/large.svg\").unwrap();
@@ -28,14 +28,14 @@ pub struct WinControlButtons {
         SvgToggleIcon::from_bytes(&[maximize.data.as_ref(), restore.data.as_ref()])
     }"))]
     #[children]
-    maximize_restore: Box<SvgToggleIcon>,
+    maximize_restore: Tr<SvgToggleIcon>,
 
     #[derivative(Default(value = "{
         let file = Asset::get(\"icons/close.svg\").unwrap();
         SvgIcon::from_bytes(file.data.as_ref())
     }"))]
     #[children]
-    close: Box<SvgIcon>,
+    close: Tr<SvgIcon>,
 }
 
 impl ObjectSubclass for WinControlButtons {
@@ -95,16 +95,13 @@ impl ObjectImpl for WinControlButtons {
         self.close
             .register_mouse_released(|w, _| w.window().close());
     }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
+    }
 }
 
 impl WidgetImpl for WinControlButtons {}
-
-impl WinControlButtons {
-    #[inline]
-    pub fn new() -> Box<Self> {
-        Object::new(&[])
-    }
-}
 
 impl EventHandle for WinControlButtons {
     type EventType = EventType;

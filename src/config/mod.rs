@@ -1,7 +1,7 @@
 pub mod font_helper;
 
 use std::cell::RefCell;
-use termio::cli::theme::Theme;
+use termio::cli::scheme::ColorScheme;
 use tmui::{
     font::Font,
     prelude::{Color, Derivative},
@@ -19,10 +19,10 @@ const DEFAULT_FONT: [&str; 2] = ["Hack", "SimSun"];
 #[derivative(Default)]
 pub struct TermdotConfig {
     #[derivative(Default(value = "\"Dark\""))]
-    default_theme: &'static str,
-    current_theme: Option<Theme>,
+    default_color_scheme: &'static str,
+    current_color_scheme: Option<ColorScheme>,
 
-    #[derivative(Default(value = "Color::rgb(18, 18, 18)"))]
+    #[derivative(Default(value = "Color::rgb(12, 12, 12)"))]
     background: Color,
     #[derivative(Default(value = "Color::rgb(204, 204, 204)"))]
     foreground: Color,
@@ -41,12 +41,12 @@ pub struct TermdotConfig {
 
 impl TermdotConfig {
     #[inline]
-    pub fn set_theme(theme: Theme) {
+    pub fn set_theme(theme: ColorScheme) {
         CONFIG.with(|config| {
             let mut config = config.borrow_mut();
             config.background = theme.background_color();
             config.foreground = theme.foreground_color();
-            config.current_theme = Some(theme);
+            config.current_color_scheme = Some(theme);
         });
 
         EventBus::push(Events::ThemeChanged);
@@ -62,16 +62,16 @@ impl TermdotConfig {
     }
 
     #[inline]
-    pub fn default_theme() -> &'static str {
-        CONFIG.with(|config| config.borrow().default_theme)
+    pub fn default_color_scheme() -> &'static str {
+        CONFIG.with(|config| config.borrow().default_color_scheme)
     }
 
     #[inline]
-    pub fn get_theme() -> Theme {
+    pub fn get_color_scheme() -> ColorScheme {
         CONFIG.with(|config| {
             config
                 .borrow()
-                .current_theme
+                .current_color_scheme
                 .clone()
                 .expect("Fatal error, current theme is None.")
         })

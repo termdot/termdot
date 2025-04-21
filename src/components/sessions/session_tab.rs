@@ -1,9 +1,9 @@
 use crate::{
+    components::title_bar::TITLE_BAR_HEIGHT,
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
 
-use super::title_bar::TITLE_BAR_HEIGHT;
 use crate::assets::Asset;
 use tlib::event_bus::event_handle::EventHandle;
 use tmui::{
@@ -22,10 +22,10 @@ pub struct SessionTab {
         SvgIcon::from_bytes(file.data.as_ref())
     }"))]
     #[children]
-    icon: Box<SvgIcon>,
+    icon: Tr<SvgIcon>,
 
     #[children]
-    session_label: Box<Label>,
+    session_label: Tr<Label>,
 }
 
 impl ObjectSubclass for SessionTab {
@@ -69,14 +69,18 @@ impl ObjectImpl for SessionTab {
         self.session_label.set_auto_wrap(false);
         self.session_label.set_font(TermdotConfig::font());
     }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
+    }
 }
 
 impl WidgetImpl for SessionTab {}
 
 impl SessionTab {
     #[inline]
-    pub fn new() -> Box<Self> {
-        Object::new(&[])
+    pub fn new() -> Tr<Self> {
+        Self::new_alloc()
     }
 
     #[inline]

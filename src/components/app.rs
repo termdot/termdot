@@ -19,9 +19,9 @@ use tmui::{
 #[global_watch(MouseMove, MousePressed, MouseReleased)]
 pub struct App {
     #[children]
-    title_bar: Box<TitleBar>,
+    title_bar: Tr<TitleBar>,
     #[children]
-    terminal_emulator: Box<TerminalEmulator>,
+    terminal_emulator: Tr<TerminalEmulator>,
 
     #[derivative(Default(value = "IpcContext::terminal().unwrap()"))]
     ipc_context: IpcContext,
@@ -44,6 +44,10 @@ impl ObjectImpl for App {
 
         self.set_vexpand(true);
         self.set_hexpand(true);
+    }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
     }
 }
 
@@ -328,8 +332,8 @@ impl IterExecutor for App {
 
 impl App {
     #[inline]
-    pub fn new() -> Box<Self> {
-        Object::new(&[])
+    pub fn new() -> Tr<Self> {
+        Self::new_alloc()
     }
 
     #[inline]
@@ -340,6 +344,6 @@ impl App {
         self.terminal_emulator.set_background(background);
 
         self.terminal_emulator
-            .set_theme(&TermdotConfig::get_theme());
+            .set_color_scheme(&TermdotConfig::get_color_scheme());
     }
 }
