@@ -1,3 +1,4 @@
+pub mod dropdown_list;
 pub mod new_tab_button;
 pub mod session_bar;
 pub mod session_tab;

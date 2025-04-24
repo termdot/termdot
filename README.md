@@ -10,16 +10,15 @@
 
 </div>
 
-**_Terminal built for Godot._**
+**_Terminal built for Godot, Improve your workflow throughout the whole game development cycle._**
 
 ## Features
 
-- **Runtime command execution console** – interact with the game during runtime.
-- **Command history caching and auto-completion** – recall and auto-fill previous inputs.
-- **Command scripting with execution status handling** – write reusable scripts and track results.
-- **Extensible and easily integrated** – fits smoothly into existing projects.
+- **Local shell support** – interact with Cmd, PowerShell etc.
+- **Game runtime command execution console** – Behavior your own command and interact with the game during runtime.
 - **Log and data inspection windows** – view logs and runtime data visually.
 - **Capture Godot's standard output and errors with timestamps automatically** - inspect error data on release export.
+- **Extensible and easily integrated** – fits smoothly into existing projects.
 
 <!-- ![Termdot Display](src/resources/termdot_display.gif) -->
 

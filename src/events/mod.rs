@@ -13,9 +13,9 @@ pub enum EventType {
     ShellExit,
     ShellReady,
     TitleChanged,
-
     ThemeChanged,
     FontChanged,
+    SessionDropdownListHide,
 }
 impl IEventType for EventType {}
 
@@ -28,6 +28,7 @@ pub enum Events {
     TitleChanged(String),
     ThemeChanged,
     FontChanged,
+    SessionDropdownListHide,
 }
 impl IEvent for Events {
     type EventType = EventType;
@@ -42,6 +43,7 @@ impl IEvent for Events {
             Self::TitleChanged(..) => EventType::TitleChanged,
             Self::ThemeChanged => EventType::ThemeChanged,
             Self::FontChanged => EventType::FontChanged,
+            Self::SessionDropdownListHide => EventType::SessionDropdownListHide,
         }
     }
 }

@@ -28,6 +28,7 @@ impl ObjectImpl for SessionBar {
     fn initialize(&mut self) {
         EventBus::register(self);
 
+        self.set_margin_left(8);
         self.set_vexpand(true);
         self.set_margin_left(20);
     }
@@ -61,16 +62,18 @@ impl EventHandle for SessionBar {
                         ProtocolType::Custom => {
                             emulator.start_custom_session(session.id, TermdotPty::new())
                         }
-                        _ => return,
+                        _ => {
+                            emulator.start_session(session.id, session.ty);
+                        }
                     }
 
                     TermdotConfig::set_theme(
                         ColorSchemeMgr::get(TermdotConfig::default_color_scheme()).unwrap(),
                     );
                     emulator.set_terminal_font(TermdotConfig::font());
-                }
 
-                self.add_child(SessionTab::new());
+                    self.add_child(SessionTab::new(session.ty));
+                }
             }
             _ => {}
         }

@@ -5,6 +5,7 @@ use crate::{
 };
 
 use crate::assets::Asset;
+use termio::cli::constant::ProtocolType;
 use tlib::event_bus::event_handle::EventHandle;
 use tmui::{
     icons::svg_icon::SvgIcon,
@@ -38,7 +39,6 @@ impl ObjectImpl for SessionTab {
 
         self.width_request(200);
         self.height_request(TITLE_BAR_HEIGHT - 1);
-        self.set_margin_left(8);
         self.set_valign(Align::Center);
         self.set_homogeneous(false);
         self.set_strict_clip_widget(false);
@@ -64,7 +64,6 @@ impl ObjectImpl for SessionTab {
         self.session_label.set_valign(Align::Center);
         self.session_label.set_content_halign(Align::Start);
         self.session_label.set_content_valign(Align::Center);
-        self.session_label.set_text("SESSION TAB");
         self.session_label.set_color(TermdotConfig::foreground());
         self.session_label.set_auto_wrap(false);
         self.session_label.set_font(TermdotConfig::font());
@@ -79,8 +78,25 @@ impl WidgetImpl for SessionTab {}
 
 impl SessionTab {
     #[inline]
-    pub fn new() -> Tr<Self> {
-        Self::new_alloc()
+    pub fn new(protocol_type: ProtocolType) -> Tr<Self> {
+        let mut tab = Self::new_alloc();
+
+        match protocol_type {
+            ProtocolType::Custom => {
+                let file = Asset::get("icons/godotengine.svg").unwrap();
+                tab.icon.load_bytes(file.data.as_ref());
+            }
+            ProtocolType::Cmd => {}
+            ProtocolType::PowerShell => {
+                let file = Asset::get("icons/powershell.svg").unwrap();
+                tab.icon.load_bytes(file.data.as_ref());
+
+                tab.set_session_name("Windows PowerShell")
+            }
+            _ => {}
+        }
+
+        tab
     }
 
     #[inline]

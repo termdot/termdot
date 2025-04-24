@@ -55,7 +55,7 @@ fn build_ui(window: &mut ApplicationWindow) {
 
     window.set_background(TermdotConfig::background());
 
-    window.set_border_radius(10.);
+    window.set_border_radius(8.);
 
     window.child(App::new());
 }

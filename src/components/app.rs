@@ -6,7 +6,10 @@ use crate::{
 };
 use ipc::ipc_context::IpcContext;
 use termio::{cli::constant::ProtocolType, emulator::core::terminal_emulator::TerminalEmulator};
-use tlib::{event_bus::event_handle::EventHandle, global_watch, iter_executor};
+use tlib::{
+    event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after,
+    utils::SnowflakeGuidGenerator,
+};
 use tmui::{
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
@@ -17,6 +20,7 @@ use tmui::{
 #[derive(Childrenable)]
 #[iter_executor]
 #[global_watch(MouseMove, MousePressed, MouseReleased)]
+#[run_after]
 pub struct App {
     #[children]
     title_bar: Tr<TitleBar>,
@@ -51,7 +55,15 @@ impl ObjectImpl for App {
     }
 }
 
-impl WidgetImpl for App {}
+impl WidgetImpl for App {
+    fn run_after(&mut self) {
+        let session = Session::new(
+            SnowflakeGuidGenerator::next_id().unwrap(),
+            ProtocolType::PowerShell,
+        );
+        EventBus::push(Events::CreateSession(session));
+    }
+}
 
 impl GlobalWatchImpl for App {
     #[inline]
@@ -275,6 +287,7 @@ impl EventHandle for App {
             EventType::HeartBeatUndetected,
             EventType::ThemeChanged,
             EventType::FontChanged,
+            EventType::SessionDropdownListHide,
         ]
     }
 
@@ -290,6 +303,9 @@ impl EventHandle for App {
             Events::FontChanged => {
                 self.terminal_emulator
                     .set_terminal_font(TermdotConfig::font());
+            }
+            Events::SessionDropdownListHide => {
+                self.terminal_emulator.update();
             }
             _ => {}
         }

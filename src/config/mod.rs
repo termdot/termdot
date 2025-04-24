@@ -26,14 +26,18 @@ pub struct TermdotConfig {
     background: Color,
     #[derivative(Default(value = "Color::rgb(204, 204, 204)"))]
     foreground: Color,
+    #[derivative(Default(value = "Color::rgb(32, 32, 32)"))]
+    pre_hover: Color,
     #[derivative(Default(value = "Color::rgb(64, 64, 64)"))]
-    ctl_grey: Color,
+    hover: Color,
     #[derivative(Default(value = "Color::rgb(245, 40, 40)"))]
-    ctl_red: Color,
-    #[derivative(Default(value = "Color::GREY_DARK"))]
+    error: Color,
+    #[derivative(Default(value = "Color::rgb(64, 64, 64)"))]
     separator: Color,
     #[derivative(Default(value = "Color::hex(\"#3b78ff\")"))]
     active_session: Color,
+    #[derivative(Default(value = "Color::hex(\"#0f6682\")"))]
+    highlight: Color,
 
     #[derivative(Default(value = "Font::with_families(&DEFAULT_FONT)"))]
     font: Font,
@@ -88,13 +92,18 @@ impl TermdotConfig {
     }
 
     #[inline]
-    pub fn ctl_grey() -> Color {
-        CONFIG.with(|config| config.borrow().ctl_grey)
+    pub fn pre_hover() -> Color {
+        CONFIG.with(|config| config.borrow().pre_hover)
     }
 
     #[inline]
-    pub fn ctl_red() -> Color {
-        CONFIG.with(|config| config.borrow().ctl_red)
+    pub fn hover() -> Color {
+        CONFIG.with(|config| config.borrow().hover)
+    }
+
+    #[inline]
+    pub fn error() -> Color {
+        CONFIG.with(|config| config.borrow().error)
     }
 
     #[inline]
@@ -105,6 +114,11 @@ impl TermdotConfig {
     #[inline]
     pub fn active_session() -> Color {
         CONFIG.with(|config| config.borrow().active_session)
+    }
+
+    #[inline]
+    pub fn highlight() -> Color {
+        CONFIG.with(|config| config.borrow().highlight)
     }
 
     #[inline]

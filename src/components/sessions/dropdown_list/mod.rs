@@ -1,0 +1,133 @@
+pub mod select_option;
+
+use crate::{
+    config::TermdotConfig,
+    events::{EventBus, EventType, Events},
+};
+use tlib::{event_bus::event_handle::EventHandle, signals};
+use tmui::{
+    prelude::*,
+    tlib::object::{ObjectImpl, ObjectSubclass},
+    views::list_view::ListView,
+    widget::{widget_ext::FocusStrat, WidgetImpl},
+};
+
+const MAX_VISIBLE_ITEMS: i32 = 20;
+const MINIMUN_WIDTH: i32 = 100;
+const MINIMUN_HEIGHT: i32 = 25;
+
+pub trait DropdownListSignals: ActionExt {
+    signals!(
+        DropdownListSignals:
+
+        /// Emit when list value's selected value chaged.
+        ///
+        /// @param [`String`]
+        value_changed(String);
+    );
+}
+impl DropdownListSignals for SessionDropdownList {}
+
+#[extends(Popup)]
+#[derive(Childable)]
+// #[win_widget(PopupImpl)]
+pub struct SessionDropdownList {
+    #[child]
+    list: Tr<ListView>,
+}
+
+impl ObjectSubclass for SessionDropdownList {
+    const NAME: &'static str = "SessionDropdownList";
+}
+
+impl ObjectImpl for SessionDropdownList {
+    fn initialize(&mut self) {
+        EventBus::register(self);
+
+        self.width_request(MINIMUN_WIDTH);
+        self.height_request(MINIMUN_HEIGHT);
+        self.set_paddings(10, 10, 10, 10);
+        self.set_border_radius(4.);
+        self.set_borders(1., 1., 1., 1.);
+        self.set_background(TermdotConfig::hover());
+        self.set_border_color(TermdotConfig::separator());
+
+        self.list.set_layout_mode(LayoutMode::Overlay);
+        self.list.set_hexpand(true);
+        self.list.set_vexpand(true);
+        self.list.register_node_released(|node, _, _| {
+            let val = node.get_value::<String>(0).unwrap();
+            let dropdown_list = node
+                .get_view()
+                .get_parent_mut()
+                .unwrap()
+                .downcast_mut::<SessionDropdownList>()
+                .unwrap();
+
+            emit!(dropdown_list, value_changed(val));
+
+            dropdown_list.trans_focus_take(FocusStrat::Restore);
+
+            dropdown_list.hide();
+        });
+
+        let scroll_bar = self.list.scroll_bar_mut();
+        scroll_bar.set_visible_in_valid(true);
+    }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
+    }
+}
+
+impl WidgetImpl for SessionDropdownList {}
+
+impl PopupImpl for SessionDropdownList {
+    #[inline]
+    fn calculate_position(&self, base_rect: Rect, _: Point) -> Point {
+        base_rect.bottom_left()
+    }
+}
+
+impl SessionDropdownList {
+    #[inline]
+    pub fn trans_focus_take(&mut self, strat: FocusStrat) {
+        self.list.take_over_focus(strat);
+    }
+
+    #[inline]
+    fn calc_height(&mut self) {
+        let len = (self.list.len() as i32).min(MAX_VISIBLE_ITEMS);
+        if len == 0 {
+            self.height_request(self.list.get_line_height());
+        } else {
+            let height = (self.list.get_line_height() + self.list.get_line_spacing()) * len;
+
+            // Add the height of borders.
+            self.height_request(height + 2)
+        }
+        ApplicationWindow::window().layout_change(self);
+    }
+}
+
+impl EventHandle for SessionDropdownList {
+    type EventType = EventType;
+    type Event = Events;
+
+    #[inline]
+    fn listen(&self) -> Vec<Self::EventType> {
+        vec![EventType::ThemeChanged]
+    }
+
+    #[inline]
+    fn handle(&mut self, evt: &Self::Event) {
+        match evt {
+            Events::ThemeChanged => {
+                self.set_background(TermdotConfig::hover());
+                self.set_border_color(TermdotConfig::separator());
+            }
+
+            _ => {}
+        }
+    }
+}
