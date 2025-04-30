@@ -50,7 +50,9 @@ impl IpcChannel {
                 }
             },
         };
-        if clean_hint {}
+        if clean_hint {
+            shell_queue.clear();
+        }
 
         let mut clean_hint = false;
         let terminal_queue = match MemQueueBuilder::new()
@@ -78,7 +80,9 @@ impl IpcChannel {
                 }
             },
         };
-        if clean_hint {}
+        if clean_hint {
+            terminal_queue.clear();
+        }
 
         Some(Self {
             role: IpcRole::Shell,

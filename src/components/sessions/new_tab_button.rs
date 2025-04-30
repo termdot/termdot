@@ -5,7 +5,7 @@ use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
-use tlib::{event_bus::event_handle::EventHandle, namespace::MouseButton};
+use tlib::{event_bus::event_handle::EventHandle, log::info, namespace::MouseButton};
 use tmui::{
     icons::svg_icon::SvgIcon,
     prelude::*,
@@ -59,6 +59,8 @@ impl ObjectImpl for NewTabButton {
     }
 
     fn initialize(&mut self) {
+        EventBus::register(self);
+
         self.set_valign(Align::Center);
         self.set_margin_left(5);
         self.set_border_radius(6.);
@@ -127,30 +129,24 @@ impl ObjectImpl for NewTabButton {
             drop_down_released(MouseEvent)
         );
     }
+
+    fn on_drop(&mut self) {
+        EventBus::remove(self);
+    }
 }
 
 impl WidgetImpl for NewTabButton {
     #[inline]
     fn on_mouse_move(&mut self, event: &MouseEvent) {
-        if self
+        self.mouse_in_dropdown_icon = self
             .drop_down
             .rect()
-            .contains(&self.map_to_global(&event.position().into()))
-        {
-            self.mouse_in_dropdown_icon = true;
-        } else {
-            self.mouse_in_dropdown_icon = false;
-        }
+            .contains(&self.map_to_global(&event.position().into()));
 
-        if self
+        self.mouse_in_addtab_icon = self
             .add_tab
             .rect()
-            .contains(&self.map_to_global(&event.position().into()))
-        {
-            self.mouse_in_addtab_icon = true;
-        } else {
-            self.mouse_in_addtab_icon = false;
-        }
+            .contains(&self.map_to_global(&event.position().into()));
     }
 
     #[inline]
@@ -184,19 +180,11 @@ impl NewTabButton {
             .add_tab
             .rect()
             .contains(&self.add_tab.map_to_global(&e.position().into()))
+            && self.just_hide
         {
-            if self.just_hide {
-                if self
-                    .add_tab
-                    .rect()
-                    .contains(&self.add_tab.map_to_global(&e.position().into()))
-                {
-                    self.set_background(TermdotConfig::pre_hover());
-                    self.add_tab.set_background(TermdotConfig::hover());
-                    self.drop_down.set_background(Color::TRANSPARENT);
-                }
-                return;
-            }
+            self.set_background(TermdotConfig::pre_hover());
+            self.add_tab.set_background(TermdotConfig::hover());
+            self.drop_down.set_background(Color::TRANSPARENT);
         }
     }
 
@@ -262,10 +250,15 @@ impl EventHandle for NewTabButton {
         vec![EventType::ThemeChanged]
     }
 
+    #[allow(clippy::single_match)]
     fn handle(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
+                info!("New tab button handle theme changed.");
+                self.set_background(TermdotConfig::background());
                 self.add_tab.set_border_color(TermdotConfig::separator());
+                self.add_tab.set_background(TermdotConfig::background());
+                self.drop_down.set_background(TermdotConfig::background());
             }
 
             _ => {}

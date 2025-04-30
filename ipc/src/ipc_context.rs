@@ -30,7 +30,7 @@ impl IpcContext {
         let mut clean_hint = false;
         let queue = match MemQueueBuilder::new()
             .build_type(BuildType::Create)
-            .os_id(&MEM_CTX)
+            .os_id(MEM_CTX)
             .build()
         {
             Ok(mq) => mq,
@@ -54,7 +54,9 @@ impl IpcContext {
             },
         };
 
-        if clean_hint {}
+        if clean_hint {
+            queue.clear();
+        }
 
         Some(Self {
             role: IpcRole::Terminal,

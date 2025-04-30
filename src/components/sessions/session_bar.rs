@@ -49,6 +49,7 @@ impl EventHandle for SessionBar {
         vec![EventType::CreateSession]
     }
 
+    #[allow(clippy::single_match)]
     #[inline]
     fn handle(&mut self, evt: &Self::Event) {
         match evt {

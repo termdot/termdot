@@ -22,8 +22,10 @@ pub struct TermdotConfig {
     default_color_scheme: &'static str,
     current_color_scheme: Option<ColorScheme>,
 
-    #[derivative(Default(value = "Color::rgb(12, 12, 12)"))]
+    #[derivative(Default(value = "Color::rgb(18, 18, 18)"))]
     background: Color,
+    #[derivative(Default(value = "Color::rgb(42, 42, 42)"))]
+    popup_background: Color,
     #[derivative(Default(value = "Color::rgb(204, 204, 204)"))]
     foreground: Color,
     #[derivative(Default(value = "Color::rgb(32, 32, 32)"))]
@@ -38,6 +40,8 @@ pub struct TermdotConfig {
     active_session: Color,
     #[derivative(Default(value = "Color::hex(\"#0f6682\")"))]
     highlight: Color,
+    #[derivative(Default(value = "Color::hex(\"#19aad8\")"))]
+    selection: Color,
 
     #[derivative(Default(value = "Font::with_families(&DEFAULT_FONT)"))]
     font: Font,
@@ -87,6 +91,11 @@ impl TermdotConfig {
     }
 
     #[inline]
+    pub fn popup_background() -> Color {
+        CONFIG.with(|config| config.borrow().popup_background)
+    }
+
+    #[inline]
     pub fn foreground() -> Color {
         CONFIG.with(|config| config.borrow().foreground)
     }
@@ -119,6 +128,11 @@ impl TermdotConfig {
     #[inline]
     pub fn highlight() -> Color {
         CONFIG.with(|config| config.borrow().highlight)
+    }
+
+    #[inline]
+    pub fn selection() -> Color {
+        CONFIG.with(|config| config.borrow().selection)
     }
 
     #[inline]

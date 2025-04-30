@@ -4,6 +4,8 @@ use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
+use select_option::SelectOption;
+use termio::cli::constant::ProtocolType;
 use tlib::{event_bus::event_handle::EventHandle, signals};
 use tmui::{
     prelude::*,
@@ -13,8 +15,8 @@ use tmui::{
 };
 
 const MAX_VISIBLE_ITEMS: i32 = 20;
-const MINIMUN_WIDTH: i32 = 100;
-const MINIMUN_HEIGHT: i32 = 25;
+const MINIMUN_WIDTH: i32 = 300;
+const MINIMUN_HEIGHT: i32 = 50;
 
 pub trait DropdownListSignals: ActionExt {
     signals!(
@@ -22,8 +24,8 @@ pub trait DropdownListSignals: ActionExt {
 
         /// Emit when list value's selected value chaged.
         ///
-        /// @param [`String`]
-        value_changed(String);
+        /// @param [`ProtocolType`]
+        value_changed(ProtocolType);
     );
 }
 impl DropdownListSignals for SessionDropdownList {}
@@ -47,16 +49,18 @@ impl ObjectImpl for SessionDropdownList {
         self.width_request(MINIMUN_WIDTH);
         self.height_request(MINIMUN_HEIGHT);
         self.set_paddings(10, 10, 10, 10);
-        self.set_border_radius(4.);
+        self.set_border_radius(10.);
         self.set_borders(1., 1., 1., 1.);
-        self.set_background(TermdotConfig::hover());
-        self.set_border_color(TermdotConfig::separator());
+        self.set_background(TermdotConfig::popup_background());
+        self.set_border_color(TermdotConfig::pre_hover());
 
+        self.list.set_line_height(16);
         self.list.set_layout_mode(LayoutMode::Overlay);
         self.list.set_hexpand(true);
         self.list.set_vexpand(true);
+        self.list.set_font(TermdotConfig::font());
         self.list.register_node_released(|node, _, _| {
-            let val = node.get_value::<String>(0).unwrap();
+            let val = node.get_value::<ProtocolType>(0).unwrap();
             let dropdown_list = node
                 .get_view()
                 .get_parent_mut()
@@ -70,6 +74,10 @@ impl ObjectImpl for SessionDropdownList {
 
             dropdown_list.hide();
         });
+
+        self.list.add_node(&SelectOption::new(ProtocolType::Cmd));
+        self.list
+            .add_node(&SelectOption::new(ProtocolType::PowerShell));
 
         let scroll_bar = self.list.scroll_bar_mut();
         scroll_bar.set_visible_in_valid(true);
@@ -120,11 +128,14 @@ impl EventHandle for SessionDropdownList {
     }
 
     #[inline]
+    #[allow(clippy::single_match)]
     fn handle(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
-                self.set_background(TermdotConfig::hover());
-                self.set_border_color(TermdotConfig::separator());
+                self.set_background(TermdotConfig::popup_background());
+                self.set_border_color(TermdotConfig::pre_hover());
+                self.list.set_background(TermdotConfig::popup_background());
+                self.list.set_font(TermdotConfig::font());
             }
 
             _ => {}
