@@ -10,6 +10,7 @@ use tmui::{
 };
 
 use crate::{
+    components::sessions::SessionTabTrait,
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
     pty::termdot_pty::TermdotPty,
@@ -73,10 +74,50 @@ impl EventHandle for SessionBar {
                     );
                     emulator.set_terminal_font(TermdotConfig::font());
 
-                    self.add_child(SessionTab::new(session.ty));
+                    for c in self.children_mut() {
+                        c.downcast_mut::<SessionTab>().unwrap().set_active(false);
+                    }
+
+                    let mut session_tab = SessionTab::new(session.ty);
+
+                    session_tab.set_active(true);
+                    session_tab.set_session_id(session.id);
+
+                    connect!(
+                        session_tab,
+                        session_tab_clicked(),
+                        self,
+                        on_session_tab_clicked(ObjectId)
+                    );
+
+                    self.add_child(session_tab);
                 }
             }
             _ => {}
+        }
+    }
+}
+
+impl SessionBar {
+    pub fn on_session_tab_clicked(&mut self, id: ObjectId) {
+        let mut active_session_id = None;
+
+        for c in self.children_mut() {
+            let session_tab = c.downcast_mut::<SessionTab>().unwrap();
+            if session_tab.id() == id {
+                session_tab.set_active(true);
+
+                active_session_id = Some(session_tab.get_session_id());
+            } else {
+                session_tab.set_active(false);
+            }
+        }
+
+        if let Some(session_id) = active_session_id {
+            if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
+                let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+                emulator.switch_session(session_id);
+            }
         }
     }
 }

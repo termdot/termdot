@@ -3,10 +3,11 @@ pub mod select_option;
 use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
+    session::Session,
 };
 use select_option::SelectOption;
 use termio::cli::constant::ProtocolType;
-use tlib::{event_bus::event_handle::EventHandle, signals};
+use tlib::{event_bus::event_handle::EventHandle, utils::SnowflakeGuidGenerator};
 use tmui::{
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
@@ -17,18 +18,6 @@ use tmui::{
 const MAX_VISIBLE_ITEMS: i32 = 20;
 const MINIMUN_WIDTH: i32 = 300;
 const MINIMUN_HEIGHT: i32 = 50;
-
-pub trait DropdownListSignals: ActionExt {
-    signals!(
-        DropdownListSignals:
-
-        /// Emit when list value's selected value chaged.
-        ///
-        /// @param [`ProtocolType`]
-        value_changed(ProtocolType);
-    );
-}
-impl DropdownListSignals for SessionDropdownList {}
 
 #[extends(Popup)]
 #[derive(Childable)]
@@ -47,13 +36,14 @@ impl ObjectImpl for SessionDropdownList {
         EventBus::register(self);
 
         self.width_request(MINIMUN_WIDTH);
-        self.height_request(MINIMUN_HEIGHT);
+        self.height_request(MINIMUN_HEIGHT + 10 * 2);
         self.set_paddings(10, 10, 10, 10);
         self.set_border_radius(10.);
         self.set_borders(1., 1., 1., 1.);
         self.set_background(TermdotConfig::popup_background());
         self.set_border_color(TermdotConfig::pre_hover());
 
+        self.list.set_reset_effect_node_on_hide(true);
         self.list.set_line_height(16);
         self.list.set_layout_mode(LayoutMode::Overlay);
         self.list.set_hexpand(true);
@@ -68,7 +58,7 @@ impl ObjectImpl for SessionDropdownList {
                 .downcast_mut::<SessionDropdownList>()
                 .unwrap();
 
-            emit!(dropdown_list, value_changed(val));
+            dropdown_list.on_list_value_changed(val);
 
             dropdown_list.trans_focus_take(FocusStrat::Restore);
 
@@ -78,6 +68,8 @@ impl ObjectImpl for SessionDropdownList {
         self.list.add_node(&SelectOption::new(ProtocolType::Cmd));
         self.list
             .add_node(&SelectOption::new(ProtocolType::PowerShell));
+
+        self.calc_height();
 
         let scroll_bar = self.list.scroll_bar_mut();
         scroll_bar.set_visible_in_valid(true);
@@ -106,15 +98,27 @@ impl SessionDropdownList {
     #[inline]
     fn calc_height(&mut self) {
         let len = (self.list.len() as i32).min(MAX_VISIBLE_ITEMS);
+        println!(
+            "len {}, line height {}, line spacing {}",
+            len,
+            self.list.get_line_height(),
+            self.list.get_line_spacing()
+        );
         if len == 0 {
             self.height_request(self.list.get_line_height());
         } else {
             let height = (self.list.get_line_height() + self.list.get_line_spacing()) * len;
 
             // Add the height of borders.
-            self.height_request(height + 2)
+            self.height_request(height + 10 * 2)
         }
         ApplicationWindow::window().layout_change(self);
+    }
+
+    #[inline]
+    fn on_list_value_changed(&mut self, protocol_type: ProtocolType) {
+        let session = Session::new(SnowflakeGuidGenerator::next_id().unwrap(), protocol_type);
+        EventBus::push(Events::CreateSession(session));
     }
 }
 
