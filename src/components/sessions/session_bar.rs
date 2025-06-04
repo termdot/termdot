@@ -1,5 +1,7 @@
 use termio::{
-    cli::{constant::ProtocolType, scheme::color_scheme_mgr::ColorSchemeMgr},
+    cli::{
+        constant::ProtocolType, scheme::color_scheme_mgr::ColorSchemeMgr, session::SessionPropsId,
+    },
     emulator::core::terminal_emulator::TerminalEmulator,
 };
 use tlib::event_bus::event_handle::EventHandle;
@@ -89,6 +91,12 @@ impl EventHandle for SessionBar {
                         self,
                         on_session_tab_clicked(ObjectId)
                     );
+                    connect!(
+                        session_tab,
+                        close_icon_clicked(),
+                        self,
+                        on_close_icon_clicked(ObjectId, SessionPropsId)
+                    );
 
                     self.add_child(session_tab);
                 }
@@ -118,6 +126,15 @@ impl SessionBar {
                 let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
                 emulator.switch_session(session_id);
             }
+        }
+    }
+
+    pub fn on_close_icon_clicked(&mut self, id: ObjectId, session_id: SessionPropsId) {
+        self.remove_children(id);
+
+        if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
+            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+            emulator.remove_session(session_id);
         }
     }
 }

@@ -28,6 +28,13 @@ pub struct SessionTab {
     #[children]
     session_label: Tr<Label>,
 
+    #[derivative(Default(value = "{
+        let file = Asset::get(\"icons/close.svg\").unwrap();
+        SvgIcon::from_bytes(file.data.as_ref())
+    }"))]
+    #[children]
+    close_icon: Tr<SvgIcon>,
+
     session_id: SessionPropsId,
 }
 
@@ -38,8 +45,15 @@ pub trait SessionTabTrait: ActionExt {
         /// Emit when session tab has been mouse released.
         ///
         /// @params:
-        /// @id: The id of SessionTab.
+        /// @ObjectId: The id of SessionTab.
         session_tab_clicked(ObjectId);
+
+        /// Emit when close icon has been mouse released.
+        ///
+        /// @params:
+        /// @ObjectId: The id of SessionTab.
+        /// @SessionPropsIdj: The session id of SessionTab.
+        close_icon_clicked(ObjectId, SessionPropsId);
     );
 }
 impl SessionTabTrait for SessionTab {}
@@ -83,6 +97,23 @@ impl ObjectImpl for SessionTab {
         self.session_label.set_color(TermdotConfig::foreground());
         self.session_label.set_auto_wrap(false);
         self.session_label.set_font(TermdotConfig::font());
+        self.session_label
+            .set_size_hint(SizeHint::new().with_max_width(140));
+
+        self.close_icon.hide();
+        self.close_icon.set_halign(Align::End);
+        self.close_icon.set_valign(Align::Center);
+        self.close_icon.width_request(20);
+        self.close_icon.height_request(20);
+        self.close_icon.set_margin_top(1);
+        self.close_icon.set_margin_right(1);
+
+        connect!(
+            self.close_icon,
+            mouse_released(),
+            self,
+            on_close_icon_released(MouseEvent)
+        );
     }
 
     fn on_drop(&mut self) {
@@ -92,8 +123,19 @@ impl ObjectImpl for SessionTab {
 
 impl WidgetImpl for SessionTab {
     #[inline]
-    fn on_mouse_released(&mut self, _: &MouseEvent) {
-        emit!(self, session_tab_clicked(self.id()));
+    fn on_mouse_released(&mut self, evt: &MouseEvent) {
+        let pos = self.map_to_global(&evt.position().into());
+        if self.rect().contains(&pos) {
+            emit!(self, session_tab_clicked(self.id()));
+        }
+    }
+
+    fn on_mouse_enter(&mut self, _: &MouseEvent) {
+        self.close_icon.show();
+    }
+
+    fn on_mouse_leave(&mut self, _: &MouseEvent) {
+        self.close_icon.hide();
     }
 }
 
@@ -147,6 +189,16 @@ impl SessionTab {
         } else {
             self.set_border_color(TermdotConfig::background());
         }
+    }
+
+    #[inline]
+    fn on_close_icon_released(&mut self, evt: MouseEvent) {
+        let mouse_pos = self.map_to_global(&evt.position().into());
+        if self.close_icon.rect().contains(&mouse_pos) {
+            return;
+        }
+
+        emit!(self, close_icon_clicked(self.id(), self.session_id))
     }
 }
 

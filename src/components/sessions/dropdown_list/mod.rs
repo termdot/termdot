@@ -98,12 +98,6 @@ impl SessionDropdownList {
     #[inline]
     fn calc_height(&mut self) {
         let len = (self.list.len() as i32).min(MAX_VISIBLE_ITEMS);
-        println!(
-            "len {}, line height {}, line spacing {}",
-            len,
-            self.list.get_line_height(),
-            self.list.get_line_spacing()
-        );
         if len == 0 {
             self.height_request(self.list.get_line_height());
         } else {
