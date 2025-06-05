@@ -21,7 +21,9 @@ use crate::{
 use super::session_tab::SessionTab;
 
 #[extends(Widget, Layout(HBox))]
-pub struct SessionBar {}
+pub struct SessionBar {
+    active_session_id: Option<SessionPropsId>,
+}
 
 impl ObjectSubclass for SessionBar {
     const NAME: &'static str = "SessionBar";
@@ -71,10 +73,10 @@ impl EventHandle for SessionBar {
                         }
                     }
 
+                    emulator.set_terminal_font(TermdotConfig::font());
                     TermdotConfig::set_theme(
                         ColorSchemeMgr::get(TermdotConfig::default_color_scheme()).unwrap(),
                     );
-                    emulator.set_terminal_font(TermdotConfig::font());
 
                     for c in self.children_mut() {
                         c.downcast_mut::<SessionTab>().unwrap().set_active(false);
@@ -84,6 +86,7 @@ impl EventHandle for SessionBar {
 
                     session_tab.set_active(true);
                     session_tab.set_session_id(session.id);
+                    self.active_session_id = Some(session.id);
 
                     connect!(
                         session_tab,
@@ -126,6 +129,10 @@ impl SessionBar {
                 let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
                 emulator.switch_session(session_id);
             }
+
+            self.active_session_id = Some(session_id);
+        } else {
+            self.active_session_id = None;
         }
     }
 
@@ -135,6 +142,28 @@ impl SessionBar {
         if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
             let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
             emulator.remove_session(session_id);
+            emulator.update();
+        }
+
+        if let Some(active_session_id) = self.active_session_id {
+            if active_session_id == session_id {
+                let mut children = self.children_mut();
+
+                if children.is_empty() {
+                    let session_tab = children[0].downcast_mut::<SessionTab>().unwrap();
+                    session_tab.set_active(true);
+
+                    if let Some(w) = ApplicationWindow::window().find_id_mut(TerminalEmulator::id())
+                    {
+                        let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+                        emulator.switch_session(session_tab.get_session_id());
+                    }
+
+                    self.active_session_id = Some(session_tab.get_session_id());
+                } else {
+                    self.active_session_id = None;
+                }
+            }
         }
     }
 }

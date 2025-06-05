@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "rust-embed",
 ]
@@ -547,7 +547,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "ahash 0.8.12",
  "getset",
@@ -890,7 +890,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "bitvec",
  "cli",
@@ -1323,7 +1323,7 @@ dependencies = [
 [[package]]
 name = "godot"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "godot-core",
  "godot-macros",
@@ -1332,7 +1332,7 @@ dependencies = [
 [[package]]
 name = "godot-bindings"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "gdextension-api",
 ]
@@ -1340,12 +1340,12 @@ dependencies = [
 [[package]]
 name = "godot-cell"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 
 [[package]]
 name = "godot-codegen"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "godot-bindings",
  "heck 0.5.0",
@@ -1358,7 +1358,7 @@ dependencies = [
 [[package]]
 name = "godot-core"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "glam",
  "godot-bindings",
@@ -1370,7 +1370,7 @@ dependencies = [
 [[package]]
 name = "godot-ffi"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "godot-bindings",
  "godot-codegen",
@@ -1381,7 +1381,7 @@ dependencies = [
 [[package]]
 name = "godot-macros"
 version = "0.3.0"
-source = "git+https://github.com/godot-rust/gdext?branch=master#f67a1ae43b1e06cd9a58ccb9d6330bf06c6e25ff"
+source = "git+https://github.com/godot-rust/gdext?branch=master#8d7d8eb8abff4f71d223ae3c9e94d1a21238e0ba"
 dependencies = [
  "godot-bindings",
  "libc",
@@ -1804,7 +1804,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "asset",
  "chrono",
@@ -2318,7 +2318,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "asset",
  "cli",
@@ -3304,7 +3304,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#afc29616fa6bde730855ba0cfd829c12862cb365"
+source = "git+https://github.com/toocol/termio#bc3bdeafb02748a1fd31ca1084d2d4e2ac1ea921"
 dependencies = [
  "cli",
  "emulator",

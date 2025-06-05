@@ -125,7 +125,7 @@ impl WidgetImpl for SessionTab {
     #[inline]
     fn on_mouse_released(&mut self, evt: &MouseEvent) {
         let pos = self.map_to_global(&evt.position().into());
-        if self.rect().contains(&pos) {
+        if self.rect().contains(&pos) && !self.close_icon.rect().contains(&pos) {
             emit!(self, session_tab_clicked(self.id()));
         }
     }

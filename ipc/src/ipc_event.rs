@@ -7,6 +7,7 @@ pub enum IpcEvent {
     HeartBeat,
     Ready,
     Exit,
+    RequestExit,
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
     TerminalVersion([u8; IPC_DATA_SIZE], usize),

@@ -21,6 +21,7 @@ pub struct TermdotPty {
     working_directory: PathBuf,
     utf8_mode: bool,
     running: bool,
+    closed: bool,
     timeout: u32,
     ipc_context: Option<IpcChannel>,
     last_heart_beat: Option<Instant>,
@@ -33,55 +34,73 @@ impl ObjectSubclass for TermdotPty {
 impl ObjectImpl for TermdotPty {}
 
 impl Pty for TermdotPty {
+    #[inline]
     fn start(&mut self, id: SessionPropsId, _: &str, _: Vec<&str>, _: Vec<&str>) -> bool {
         self.running = true;
+        self.closed = false;
 
         self.ipc_context = IpcChannel::terminal(id);
 
         self.running
     }
 
+    #[inline]
+    fn close(&mut self) {
+        self.send_ipc_data(IpcEvent::RequestExit);
+    }
+
+    #[inline]
     fn set_writeable(&mut self, writeable: bool) {
         self.writeable = writeable
     }
 
+    #[inline]
     fn writeable(&self) -> bool {
         self.writeable
     }
 
+    #[inline]
     fn set_flow_control_enable(&mut self, on: bool) {
         self.flow_control_enable = on;
     }
 
+    #[inline]
     fn flow_control_enable(&self) -> bool {
         self.flow_control_enable
     }
 
+    #[inline]
     fn set_window_size(&mut self, cols: i32, rows: i32) {
         self.window_size = Size::new(cols, rows);
         self.send_ipc_data(IpcEvent::SetTerminalSize(cols, rows));
     }
 
+    #[inline]
     fn window_size(&self) -> Size {
         self.window_size
     }
 
+    #[inline]
     fn set_working_directory(&mut self, directory: PathBuf) {
         self.working_directory = directory
     }
 
+    #[inline]
     fn is_running(&self) -> bool {
         self.running
     }
 
+    #[inline]
     fn set_utf8_mode(&mut self, on: bool) {
         self.utf8_mode = on;
     }
 
+    #[inline]
     fn set_timeout(&mut self, timeout: u32) {
         self.timeout = timeout;
     }
 
+    #[inline]
     fn send_data(&mut self, data: String) {
         if !self.writeable {
             return;
@@ -93,6 +112,7 @@ impl Pty for TermdotPty {
         }
     }
 
+    #[inline]
     fn read_data(&mut self) -> Vec<u8> {
         if !self.running {
             return vec![];
@@ -105,8 +125,8 @@ impl Pty for TermdotPty {
 
         if let Some(last_heart_beat) = self.last_heart_beat {
             if last_heart_beat.elapsed().as_millis() > HEART_BEAT_INTERVAL * 10 {
-                EventBus::push(Events::HeartBeatUndetected);
                 self.running = false;
+                self.closed = true;
                 return vec![];
             }
         }
@@ -124,6 +144,7 @@ impl Pty for TermdotPty {
                 }
                 IpcEvent::Exit => {
                     self.running = false;
+                    self.closed = true;
                     self.ipc_context = None;
                 }
                 IpcEvent::SetTerminalSize(_, _) => {}
@@ -153,8 +174,19 @@ impl Pty for TermdotPty {
         vec![]
     }
 
+    #[inline]
     fn on_window_closed(&mut self) {
         self.send_ipc_data(IpcEvent::Exit);
+    }
+
+    #[inline]
+    fn is_closed(&self) -> bool {
+        self.closed
+    }
+
+    #[inline]
+    fn emit_finished(&mut self) {
+        EventBus::push(Events::HeartBeatUndetected);
     }
 }
 

@@ -5,7 +5,7 @@ use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
-use tlib::{event_bus::event_handle::EventHandle, log::info, namespace::MouseButton};
+use tlib::{event_bus::event_handle::EventHandle, namespace::MouseButton};
 use tmui::{
     icons::svg_icon::SvgIcon,
     prelude::*,
@@ -254,7 +254,6 @@ impl EventHandle for NewTabButton {
     fn handle(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
-                info!("New tab button handle theme changed.");
                 self.set_background(TermdotConfig::background());
                 self.add_tab.set_border_color(TermdotConfig::separator());
                 self.add_tab.set_background(TermdotConfig::background());

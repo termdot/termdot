@@ -144,6 +144,9 @@ impl INode for Termdot {
         while let Some(evt) = self.ipc_channel.as_ref().unwrap().try_recv() {
             match evt {
                 IpcEvent::HeartBeat => {}
+                IpcEvent::RequestExit => {
+                    self.termdot_exit();
+                }
                 IpcEvent::Exit => {
                     self.child = None;
                     self.shell.reset();
@@ -296,7 +299,6 @@ impl Termdot {
 
         if self.child.is_none() {
             godot_error!("Run external app failed, cant find the external application.");
-            return;
         }
     }
 
