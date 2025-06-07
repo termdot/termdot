@@ -1,3 +1,4 @@
+use termio::cli::session::SessionPropsId;
 use tmui::tlib::{
     event_bus::event::{IEvent, IEventType},
     event_bus_init,
@@ -24,8 +25,8 @@ pub enum Events {
     CreateSession(Session),
     HeartBeatUndetected,
     ShellExit,
-    ShellReay,
-    TitleChanged(String),
+    ShellReay(SessionPropsId),
+    TitleChanged(SessionPropsId, String),
     ThemeChanged,
     FontChanged,
     SessionDropdownListHide,
@@ -39,7 +40,7 @@ impl IEvent for Events {
             Self::CreateSession(..) => EventType::CreateSession,
             Self::HeartBeatUndetected => EventType::HeartBeatUndetected,
             Self::ShellExit => EventType::ShellExit,
-            Self::ShellReay => EventType::ShellReady,
+            Self::ShellReay(..) => EventType::ShellReady,
             Self::TitleChanged(..) => EventType::TitleChanged,
             Self::ThemeChanged => EventType::ThemeChanged,
             Self::FontChanged => EventType::FontChanged,

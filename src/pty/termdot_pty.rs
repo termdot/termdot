@@ -8,12 +8,13 @@ use termio::{
     cli::session::SessionPropsId,
     emulator::pty::{Pty, PtySignals},
 };
-use tlib::{log::error, object::ObjectSubclass};
+use tlib::{log::error, namespace::ExitStatus, object::ObjectSubclass};
 use tmui::prelude::*;
 
 #[extends(Object)]
 #[async_task(name = "AsyncTask", value = "i32")]
 pub struct TermdotPty {
+    id: SessionPropsId,
     #[derivative(Default(value = "true"))]
     writeable: bool,
     flow_control_enable: bool,
@@ -36,6 +37,7 @@ impl ObjectImpl for TermdotPty {}
 impl Pty for TermdotPty {
     #[inline]
     fn start(&mut self, id: SessionPropsId, _: &str, _: Vec<&str>, _: Vec<&str>) -> bool {
+        self.id = id;
         self.running = true;
         self.closed = false;
 
@@ -135,7 +137,7 @@ impl Pty for TermdotPty {
             match evt {
                 IpcEvent::HeartBeat => self.last_heart_beat = Some(Instant::now()),
                 IpcEvent::Ready => {
-                    EventBus::push(Events::ShellReay);
+                    EventBus::push(Events::ShellReay(self.id));
                     self.send_ipc_data(IpcEvent::SetTerminalSize(
                         self.window_size.width(),
                         self.window_size.height(),
@@ -153,7 +155,7 @@ impl Pty for TermdotPty {
                     data.truncate(len);
                     return data;
                 }
-                IpcEvent::HostNameChanged(data, len) => {
+                IpcEvent::HostNameChanged(session_id, data, len) => {
                     let mut data = data.to_vec();
                     data.truncate(len);
                     let data = match String::from_utf8(data) {
@@ -165,7 +167,7 @@ impl Pty for TermdotPty {
                             );
                         }
                     };
-                    EventBus::push(Events::TitleChanged(data));
+                    EventBus::push(Events::TitleChanged(session_id, data));
                 }
                 _ => {}
             }
@@ -187,6 +189,8 @@ impl Pty for TermdotPty {
     #[inline]
     fn emit_finished(&mut self) {
         EventBus::push(Events::HeartBeatUndetected);
+        emit!(self, finished(self.id, ExitStatus::NormalExit));
+        self.closed = false;
     }
 }
 

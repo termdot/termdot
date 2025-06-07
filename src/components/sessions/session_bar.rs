@@ -51,7 +51,11 @@ impl EventHandle for SessionBar {
 
     #[inline]
     fn listen(&self) -> Vec<Self::EventType> {
-        vec![EventType::CreateSession]
+        vec![
+            EventType::CreateSession,
+            EventType::ShellReady,
+            EventType::TitleChanged,
+        ]
     }
 
     #[allow(clippy::single_match)]
@@ -104,6 +108,23 @@ impl EventHandle for SessionBar {
                     self.add_child(session_tab);
                 }
             }
+
+            Events::ShellReay(..) => {
+                // Do nothing temporary
+            }
+
+            Events::TitleChanged(session_id, title) => {
+                for child in self.children_mut() {
+                    let session_tab = child
+                        .downcast_mut::<SessionTab>()
+                        .expect("[SessionBar::handle::TitleChanged] downcast_mut is None.");
+                    if session_tab.get_session_id() == *session_id {
+                        session_tab.set_title(title);
+                        break;
+                    }
+                }
+            }
+
             _ => {}
         }
     }
@@ -149,7 +170,7 @@ impl SessionBar {
             if active_session_id == session_id {
                 let mut children = self.children_mut();
 
-                if children.is_empty() {
+                if !children.is_empty() {
                     let session_tab = children[0].downcast_mut::<SessionTab>().unwrap();
                     session_tab.set_active(true);
 

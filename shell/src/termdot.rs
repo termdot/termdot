@@ -375,7 +375,10 @@ impl Termdot {
         }
 
         self.send_ipc_event(IpcEvent::Ready);
-        self.send_ipc_event(IpcEvent::pack_host_name(&self.host_name.to_string()));
+        self.send_ipc_event(IpcEvent::pack_host_name(
+            session_id,
+            &self.host_name.to_string(),
+        ));
         self.shell.prompt()
     }
 }

@@ -10,6 +10,7 @@ use assets::Asset;
 use components::app::App;
 use config::{font_helper::load_fonts, TermdotConfig};
 use termio::cli::scheme::color_scheme_mgr::ColorSchemeMgr;
+use tlib::log::error;
 use tmui::{
     application::Application, application_window::ApplicationWindow, graphics::icon::Icon,
     prelude::*,
@@ -71,10 +72,13 @@ fn set_panic_hook() {
         } else {
             "Unknown panic"
         };
+
         let location = panic_info.location();
-        common::log::LocalLog::append(format!(
+        let panic = format!(
             "[PANIC] [{}] Panic occurred.\r\nLocation: {:?}\r\nPanic:\r\n{}\r\n",
             thread_name, location, msg
-        ));
+        );
+        error!("{}", panic);
+        common::log::LocalLog::append(panic);
     }));
 }

@@ -1,3 +1,5 @@
+use termio::cli::session::SessionPropsId;
+
 use crate::IPC_DATA_SIZE;
 
 #[repr(align(64))]
@@ -11,7 +13,7 @@ pub enum IpcEvent {
     /// (Cols, Rows)
     SetTerminalSize(i32, i32),
     TerminalVersion([u8; IPC_DATA_SIZE], usize),
-    HostNameChanged([u8; IPC_DATA_SIZE], usize),
+    HostNameChanged(SessionPropsId, [u8; IPC_DATA_SIZE], usize),
     SendData([u8; IPC_DATA_SIZE], usize),
 }
 
@@ -41,7 +43,7 @@ impl IpcEvent {
     }
 
     /// Pack string to [`IpcEvent::HostNameChanged`]
-    pub fn pack_host_name(host_name: &str) -> IpcEvent {
+    pub fn pack_host_name(session_id: SessionPropsId, host_name: &str) -> IpcEvent {
         if host_name.len() > IPC_DATA_SIZE {
             panic!(
                 "[IpcEvent::pack_host_name] host name is too long, max length is {}",
@@ -62,7 +64,7 @@ impl IpcEvent {
         let mut array = [0u8; IPC_DATA_SIZE];
         array[..chunk.len()].copy_from_slice(chunk);
 
-        IpcEvent::HostNameChanged(array, chunk.len())
+        IpcEvent::HostNameChanged(session_id, array, chunk.len())
     }
 
     pub fn pack_terminal_version(version: &str) -> IpcEvent {

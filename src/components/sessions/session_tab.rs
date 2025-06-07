@@ -192,6 +192,11 @@ impl SessionTab {
     }
 
     #[inline]
+    pub fn set_title(&mut self, title: &str) {
+        self.session_label.set_text(title);
+    }
+
+    #[inline]
     fn on_close_icon_released(&mut self, evt: MouseEvent) {
         let mouse_pos = self.map_to_global(&evt.position().into());
         if self.close_icon.rect().contains(&mouse_pos) {
@@ -208,20 +213,12 @@ impl EventHandle for SessionTab {
 
     #[inline]
     fn listen(&self) -> Vec<EventType> {
-        vec![
-            EventType::TitleChanged,
-            EventType::ThemeChanged,
-            EventType::FontChanged,
-        ]
+        vec![EventType::ThemeChanged, EventType::FontChanged]
     }
 
     #[inline]
     fn handle(&mut self, evt: &Events) {
         match evt {
-            Events::TitleChanged(title) => {
-                self.session_label.set_text(title);
-            }
-
             Events::ThemeChanged => {
                 self.set_border_color(TermdotConfig::active_session());
                 self.set_background(TermdotConfig::background());
