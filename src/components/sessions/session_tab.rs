@@ -1,3 +1,5 @@
+use std::collections::hash_set::Iter;
+
 use crate::{
     components::title_bar::TITLE_BAR_HEIGHT,
     config::TermdotConfig,
@@ -5,6 +7,7 @@ use crate::{
 };
 
 use crate::assets::Asset;
+use nohash_hasher::IntSet;
 use termio::cli::{constant::ProtocolType, session::SessionPropsId};
 use tlib::{event_bus::event_handle::EventHandle, signals};
 use tmui::{
@@ -35,7 +38,9 @@ pub struct SessionTab {
     #[children]
     close_icon: Tr<SvgIcon>,
 
-    session_id: SessionPropsId,
+    session_ids: IntSet<SessionPropsId>,
+    active_session_id: SessionPropsId,
+    session_panel_id: ObjectId,
 }
 
 pub trait SessionTabTrait: ActionExt {
@@ -52,8 +57,7 @@ pub trait SessionTabTrait: ActionExt {
         ///
         /// @params:
         /// @ObjectId: The id of SessionTab.
-        /// @SessionPropsIdj: The session id of SessionTab.
-        close_icon_clicked(ObjectId, SessionPropsId);
+        close_icon_clicked(ObjectId);
     );
 }
 impl SessionTabTrait for SessionTab {}
@@ -173,13 +177,48 @@ impl SessionTab {
     }
 
     #[inline]
-    pub fn set_session_id(&mut self, id: SessionPropsId) {
-        self.session_id = id;
+    pub fn add_session_id(&mut self, id: SessionPropsId) {
+        self.session_ids.insert(id);
     }
 
     #[inline]
-    pub fn get_session_id(&self) -> SessionPropsId {
-        self.session_id
+    pub fn remove_session_id(&mut self, id: SessionPropsId) {
+        self.session_ids.remove(&id);
+    }
+
+    #[inline]
+    pub fn contains_session_id(&self, id: SessionPropsId) -> bool {
+        self.session_ids.contains(&id)
+    }
+
+    #[inline]
+    pub fn has_session_id(&self) -> bool {
+        !self.session_ids.is_empty()
+    }
+
+    #[inline]
+    pub fn set_session_panel_id(&mut self, id: ObjectId) {
+        self.session_panel_id = id;
+    }
+
+    #[inline]
+    pub fn session_id_iter(&self) -> Iter<SessionPropsId> {
+        self.session_ids.iter()
+    }
+
+    #[inline]
+    pub fn get_session_panel_id(&self) -> ObjectId {
+        self.session_panel_id
+    }
+
+    #[inline]
+    pub fn set_active_session_id(&mut self, id: SessionPropsId) {
+        self.active_session_id = id;
+    }
+
+    #[inline]
+    pub fn get_active_session_id(&self) -> SessionPropsId {
+        self.active_session_id
     }
 
     #[inline]
@@ -203,7 +242,7 @@ impl SessionTab {
             return;
         }
 
-        emit!(self, close_icon_clicked(self.id(), self.session_id))
+        emit!(self, close_icon_clicked(self.id()))
     }
 }
 

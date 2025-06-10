@@ -12,7 +12,6 @@ use tlib::{log::error, namespace::ExitStatus, object::ObjectSubclass};
 use tmui::prelude::*;
 
 #[extends(Object)]
-#[async_task(name = "AsyncTask", value = "i32")]
 pub struct TermdotPty {
     id: SessionPropsId,
     #[derivative(Default(value = "true"))]

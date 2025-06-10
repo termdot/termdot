@@ -1,14 +1,12 @@
 use termio::{
-    cli::{
-        constant::ProtocolType, scheme::color_scheme_mgr::ColorSchemeMgr, session::SessionPropsId,
-    },
-    emulator::core::terminal_emulator::TerminalEmulator,
+    cli::{constant::ProtocolType, scheme::color_scheme_mgr::ColorSchemeMgr},
+    emulator::core::terminal_emulator::{TerminalEmulator, TerminalEmulatorTrait},
 };
-use tlib::event_bus::event_handle::EventHandle;
+use tlib::{event_bus::event_handle::EventHandle, iter_executor, log::warn};
 use tmui::{
     prelude::*,
     tlib::object::{ObjectImpl, ObjectSubclass},
-    widget::WidgetImpl,
+    widget::{IterExecutor, WidgetImpl},
 };
 
 use crate::{
@@ -21,8 +19,10 @@ use crate::{
 use super::session_tab::SessionTab;
 
 #[extends(Widget, Layout(HBox))]
+#[iter_executor]
 pub struct SessionBar {
-    active_session_id: Option<SessionPropsId>,
+    active_session_panel_id: Option<ObjectId>,
+    removed_session_panel: Option<ObjectId>,
 }
 
 impl ObjectSubclass for SessionBar {
@@ -36,6 +36,18 @@ impl ObjectImpl for SessionBar {
         self.set_margin_left(8);
         self.set_vexpand(true);
         self.set_margin_left(20);
+
+        if let Some(w) = ApplicationWindow::window().find_id_mut(TerminalEmulator::id()) {
+            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+            connect!(
+                emulator,
+                session_panel_finished(),
+                self,
+                on_session_panel_finished(ObjectId)
+            );
+        } else {
+            warn!("[SessionBar::initialize] The `TerminalEmulator` is None.");
+        }
     }
 
     fn on_drop(&mut self) {
@@ -68,14 +80,12 @@ impl EventHandle for SessionBar {
                 if let Some(w) = win.find_id_mut(TerminalEmulator::id()) {
                     let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
 
-                    match session.ty {
+                    let session_panel_id = match session.ty {
                         ProtocolType::Custom => {
                             emulator.start_custom_session(session.id, TermdotPty::new())
                         }
-                        _ => {
-                            emulator.start_session(session.id, session.ty);
-                        }
-                    }
+                        _ => emulator.start_session(session.id, session.ty),
+                    };
 
                     emulator.set_terminal_font(TermdotConfig::font());
                     TermdotConfig::set_theme(
@@ -89,8 +99,10 @@ impl EventHandle for SessionBar {
                     let mut session_tab = SessionTab::new(session.ty);
 
                     session_tab.set_active(true);
-                    session_tab.set_session_id(session.id);
-                    self.active_session_id = Some(session.id);
+                    session_tab.add_session_id(session.id);
+                    session_tab.set_active_session_id(session.id);
+                    session_tab.set_session_panel_id(session_panel_id);
+                    self.active_session_panel_id = Some(session_panel_id);
 
                     connect!(
                         session_tab,
@@ -102,7 +114,7 @@ impl EventHandle for SessionBar {
                         session_tab,
                         close_icon_clicked(),
                         self,
-                        on_close_icon_clicked(ObjectId, SessionPropsId)
+                        on_close_icon_clicked(ObjectId)
                     );
 
                     self.add_child(session_tab);
@@ -118,7 +130,7 @@ impl EventHandle for SessionBar {
                     let session_tab = child
                         .downcast_mut::<SessionTab>()
                         .expect("[SessionBar::handle::TitleChanged] downcast_mut is None.");
-                    if session_tab.get_session_id() == *session_id {
+                    if session_tab.contains_session_id(*session_id) {
                         session_tab.set_title(title);
                         break;
                     }
@@ -132,58 +144,85 @@ impl EventHandle for SessionBar {
 
 impl SessionBar {
     pub fn on_session_tab_clicked(&mut self, id: ObjectId) {
-        let mut active_session_id = None;
-
+        let mut active_session_panel_id = None;
         for c in self.children_mut() {
             let session_tab = c.downcast_mut::<SessionTab>().unwrap();
             if session_tab.id() == id {
                 session_tab.set_active(true);
 
-                active_session_id = Some(session_tab.get_session_id());
+                if let Some(w) = ApplicationWindow::window().find_id_mut(TerminalEmulator::id()) {
+                    let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+                    emulator.switch_session(session_tab.get_active_session_id());
+                }
+
+                active_session_panel_id = Some(session_tab.get_session_panel_id());
             } else {
                 session_tab.set_active(false);
             }
         }
+        self.active_session_panel_id = active_session_panel_id;
+    }
 
-        if let Some(session_id) = active_session_id {
-            if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
-                let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
-                emulator.switch_session(session_id);
+    pub fn on_close_icon_clicked(&mut self, session_tab_id: ObjectId) {
+        if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
+            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+
+            for c in self.children().iter() {
+                if c.id() == session_tab_id {
+                    let session_tab = c.downcast_ref::<SessionTab>().expect(
+                        "[SessionBar::on_close_icon_clicked] Downcast widget to SessionTab failed.",
+                    );
+                    for session_id in session_tab.session_id_iter() {
+                        emulator.remove_session(*session_id);
+                    }
+                    break;
+                }
             }
-
-            self.active_session_id = Some(session_id);
-        } else {
-            self.active_session_id = None;
         }
     }
 
-    pub fn on_close_icon_clicked(&mut self, id: ObjectId, session_id: SessionPropsId) {
-        self.remove_children(id);
-
-        if let Some(w) = self.window().find_id_mut(TerminalEmulator::id()) {
-            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
-            emulator.remove_session(session_id);
-            emulator.update();
+    fn on_session_panel_finished(&mut self, panel_id: ObjectId) {
+        for child in self.children() {
+            let session_tab = child.downcast_ref::<SessionTab>().unwrap();
+            if session_tab.get_session_panel_id() == panel_id {
+                self.remove_session_tab(session_tab.id(), panel_id);
+                break;
+            }
         }
+    }
 
-        if let Some(active_session_id) = self.active_session_id {
-            if active_session_id == session_id {
-                let mut children = self.children_mut();
+    fn remove_session_tab(&mut self, session_tab_id: ObjectId, session_panel_id: ObjectId) {
+        self.remove_children(session_tab_id);
+        self.removed_session_panel = Some(session_panel_id);
+    }
+}
 
-                if !children.is_empty() {
-                    let session_tab = children[0].downcast_mut::<SessionTab>().unwrap();
-                    session_tab.set_active(true);
+impl IterExecutor for SessionBar {
+    #[inline]
+    fn iter_execute(&mut self) {
+        if let Some(session_panel_id) = self.removed_session_panel.take() {
+            if let Some(active_session_panel_id) = self.active_session_panel_id {
+                if active_session_panel_id == session_panel_id {
+                    let mut children = self.children_mut();
 
-                    if let Some(w) = ApplicationWindow::window().find_id_mut(TerminalEmulator::id())
-                    {
-                        let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
-                        emulator.switch_session(session_tab.get_session_id());
+                    if !children.is_empty() {
+                        let session_tab = children[0].downcast_mut::<SessionTab>().unwrap();
+                        session_tab.set_active(true);
+
+                        if let Some(w) =
+                            ApplicationWindow::window().find_id_mut(TerminalEmulator::id())
+                        {
+                            let emulator = w.downcast_mut::<TerminalEmulator>().unwrap();
+                            emulator.switch_session(session_tab.get_active_session_id());
+                        }
+
+                        self.active_session_panel_id = Some(session_tab.get_session_panel_id());
+                    } else {
+                        self.active_session_panel_id = None;
                     }
-
-                    self.active_session_id = Some(session_tab.get_session_id());
-                } else {
-                    self.active_session_id = None;
                 }
+
+                ApplicationWindow::window().layout_change(self);
             }
         }
     }
