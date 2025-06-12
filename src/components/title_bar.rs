@@ -45,6 +45,8 @@ impl ObjectImpl for TitleBar {
 
         self.enable_bubble(EventBubble::MOUSE_PRESSED);
         self.enable_bubble(EventBubble::MOUSE_RELEASED);
+
+        connect!(self, size_changed(), self, on_size_changed(Size));
     }
 
     fn on_drop(&mut self) {
@@ -94,6 +96,25 @@ impl TitleBar {
     #[inline]
     pub fn new() -> Tr<Self> {
         Self::new_alloc()
+    }
+
+    #[inline]
+    pub fn on_size_changed(&mut self, _: Size) {
+        let session_bar_width = self.get_title_bar_theoretical_width();
+
+        self.session_bar
+            .set_size_hint(SizeHint::new().with_max_width(session_bar_width));
+    }
+
+    #[inline]
+    pub fn get_title_bar_theoretical_width(&self) -> i32 {
+        self.size().width()
+            - self.new_tab_button.rect().size().width()
+            - self.win_control_buttons.rect().size().width()
+            // Session bar margin left
+            - 20
+            // New tab button margin left
+            - 5
     }
 }
 

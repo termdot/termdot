@@ -10,13 +10,13 @@ use tmui::{
 };
 
 use crate::{
-    components::sessions::SessionTabTrait,
+    components::{sessions::SessionTabTrait, title_bar::TitleBar},
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
     pty::termdot_pty::TermdotPty,
 };
 
-use super::session_tab::SessionTab;
+use super::{session_tab::SessionTab, MAX_WIDTH, MIN_WIDTH};
 
 #[extends(Widget, Layout(HBox))]
 #[iter_executor]
@@ -33,7 +33,6 @@ impl ObjectImpl for SessionBar {
     fn initialize(&mut self) {
         EventBus::register(self);
 
-        self.set_margin_left(8);
         self.set_vexpand(true);
         self.set_margin_left(20);
 
@@ -118,6 +117,8 @@ impl EventHandle for SessionBar {
                     );
 
                     self.add_child(session_tab);
+
+                    self.on_session_count_changed();
                 }
             }
 
@@ -194,6 +195,23 @@ impl SessionBar {
     fn remove_session_tab(&mut self, session_tab_id: ObjectId, session_panel_id: ObjectId) {
         self.remove_children(session_tab_id);
         self.removed_session_panel = Some(session_panel_id);
+
+        self.on_session_count_changed();
+    }
+
+    fn on_session_count_changed(&mut self) {
+        let parent = self
+            .get_parent_ref()
+            .expect("[SessionBar::on_session_count_changed] get parent is None.")
+            .downcast_ref::<TitleBar>()
+            .expect("[SessionBar::on_session_count_changed] Cast to `TitleBar` failed.");
+        let theo_width = parent.get_title_bar_theoretical_width();
+        let count = self.children().len() as i32;
+        let width = (theo_width / count).clamp(MIN_WIDTH, MAX_WIDTH);
+
+        for c in self.children_mut() {
+            c.resize(Some(width), None);
+        }
     }
 }
 

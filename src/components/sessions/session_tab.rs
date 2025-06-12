@@ -43,6 +43,9 @@ pub struct SessionTab {
     session_panel_id: ObjectId,
 }
 
+pub const MAX_WIDTH: i32 = 200;
+pub const MIN_WIDTH: i32 = 40;
+
 pub trait SessionTabTrait: ActionExt {
     signals!(
         SessionTab:
@@ -70,7 +73,7 @@ impl ObjectImpl for SessionTab {
     fn initialize(&mut self) {
         EventBus::register(self);
 
-        self.width_request(200);
+        self.width_request(MAX_WIDTH);
         self.height_request(TITLE_BAR_HEIGHT - 1);
         self.set_valign(Align::Center);
         self.set_homogeneous(false);
@@ -89,9 +92,6 @@ impl ObjectImpl for SessionTab {
         self.icon.set_halign(Align::Center);
         self.icon.set_margin_left(margin);
 
-        self.session_label.set_size_hint(
-            SizeHint::new().with_max_width(size.width() - icon_size.width() - margin * 2),
-        );
         self.session_label.set_margin_left(margin);
         self.session_label.set_margin_top(2);
         self.session_label.set_halign(Align::Center);
@@ -101,8 +101,8 @@ impl ObjectImpl for SessionTab {
         self.session_label.set_color(TermdotConfig::foreground());
         self.session_label.set_auto_wrap(false);
         self.session_label.set_font(TermdotConfig::font());
-        self.session_label
-            .set_size_hint(SizeHint::new().with_max_width(140));
+
+        connect!(self, size_changed(), self, on_size_changed(Size));
 
         self.close_icon.hide();
         self.close_icon.set_halign(Align::End);
@@ -112,12 +112,11 @@ impl ObjectImpl for SessionTab {
         self.close_icon.set_margin_top(1);
         self.close_icon.set_margin_right(1);
 
-        connect!(
-            self.close_icon,
-            mouse_released(),
-            self,
-            on_close_icon_released(MouseEvent)
-        );
+        let close_icon_size = self.close_icon.rect().size();
+        self.session_label
+            .set_size_hint(SizeHint::new().with_max_width(
+                size.width() - icon_size.width() - close_icon_size.width() - margin * 2,
+            ));
     }
 
     fn on_drop(&mut self) {
@@ -131,6 +130,8 @@ impl WidgetImpl for SessionTab {
         let pos = self.map_to_global(&evt.position().into());
         if self.rect().contains(&pos) && !self.close_icon.rect().contains(&pos) {
             emit!(self, session_tab_clicked(self.id()));
+        } else if self.close_icon.rect().contains(&pos) {
+            self.on_close_icon_released();
         }
     }
 
@@ -236,13 +237,23 @@ impl SessionTab {
     }
 
     #[inline]
-    fn on_close_icon_released(&mut self, evt: MouseEvent) {
-        let mouse_pos = self.map_to_global(&evt.position().into());
-        if self.close_icon.rect().contains(&mouse_pos) {
-            return;
-        }
-
+    fn on_close_icon_released(&mut self) {
         emit!(self, close_icon_clicked(self.id()))
+    }
+
+    #[inline]
+    fn on_size_changed(&mut self, size: Size) {
+        let margin = 5;
+        let icon_size = self.icon.rect().size();
+        let close_icon_size = self.close_icon.get_view_size();
+
+        self.session_label
+            .set_size_hint(
+                SizeHint::new().with_max_width(
+                    (size.width() - icon_size.width() - close_icon_size.width() - margin * 2 - 2)
+                        .max(0),
+                ),
+            );
     }
 }
 
