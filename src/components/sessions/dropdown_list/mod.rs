@@ -7,6 +7,7 @@ use crate::{
 };
 use select_option::SelectOption;
 use termio::cli::constant::ProtocolType;
+use tlib::log;
 use tlib::{event_bus::event_handle::EventHandle, utils::SnowflakeGuidGenerator};
 use tmui::{
     prelude::*,
@@ -21,7 +22,11 @@ const MINIMUN_HEIGHT: i32 = 50;
 
 #[extends(Popup)]
 #[derive(Childable)]
-// #[win_widget(PopupImpl)]
+#[tlib::win_widget(
+    o2s(SessionDropdownMsg),
+    s2o(SessionDropdownMsg),
+    PopupImpl(calculate_position(popup_position_calculate))
+)]
 pub struct SessionDropdownList {
     #[child]
     list: Tr<ListView>,
@@ -82,11 +87,14 @@ impl ObjectImpl for SessionDropdownList {
 
 impl WidgetImpl for SessionDropdownList {}
 
-impl PopupImpl for SessionDropdownList {
-    #[inline]
-    fn calculate_position(&self, base_rect: Rect, _: Point) -> Point {
-        base_rect.bottom_left()
-    }
+// impl PopupImpl for SessionDropdownList {
+//     #[inline]
+//     fn calculate_position(&self, base_rect: Rect, _: Point) -> Point {
+//         base_rect.bottom_left()
+//     }
+// }
+fn popup_position_calculate(_: &dyn WidgetImpl, base_rect: Rect, _: Point) -> Point {
+    base_rect.bottom_left()
 }
 
 impl SessionDropdownList {
@@ -111,8 +119,7 @@ impl SessionDropdownList {
 
     #[inline]
     fn on_list_value_changed(&mut self, protocol_type: ProtocolType) {
-        let session = Session::new(SnowflakeGuidGenerator::next_id().unwrap(), protocol_type);
-        EventBus::push(Events::CreateSession(session));
+        self.send_cross_win_msg(SessionDropdownMsg::CreateSession(protocol_type));
     }
 }
 
@@ -127,7 +134,7 @@ impl EventHandle for SessionDropdownList {
 
     #[inline]
     #[allow(clippy::single_match)]
-    fn handle(&mut self, evt: &Self::Event) {
+    fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
                 self.set_background(TermdotConfig::popup_background());
@@ -137,6 +144,33 @@ impl EventHandle for SessionDropdownList {
             }
 
             _ => {}
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionDropdownMsg {
+    CreateSession(ProtocolType),
+}
+
+impl CrossWinMsgHandler for SessionDropdownList {
+    type T = SessionDropdownMsg;
+
+    #[inline]
+    fn handle(&mut self, _msg: Self::T) {}
+}
+
+impl CrossWinMsgHandler for CorrSessionDropdownList {
+    type T = SessionDropdownMsg;
+
+    #[inline]
+    fn handle(&mut self, msg: Self::T) {
+        match msg {
+            SessionDropdownMsg::CreateSession(protocol_type) => {
+                let session =
+                    Session::new(SnowflakeGuidGenerator::next_id().unwrap(), protocol_type);
+                EventBus::push(Events::CreateSession(session));
+            }
         }
     }
 }

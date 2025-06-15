@@ -104,6 +104,8 @@ impl TitleBar {
 
         self.session_bar
             .set_size_hint(SizeHint::new().with_max_width(session_bar_width));
+
+        self.session_bar.calc_session_tab();
     }
 
     #[inline]
@@ -129,7 +131,7 @@ impl EventHandle for TitleBar {
 
     #[inline]
     #[allow(clippy::single_match)]
-    fn handle(&mut self, evt: &Self::Event) {
+    fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
                 self.set_background(TermdotConfig::background());

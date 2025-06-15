@@ -2,6 +2,7 @@ use std::{cell::Cell, rc::Rc};
 
 use crate::{
     assets::Asset,
+    components::sessions::dropdown_list::CorrSessionDropdownList,
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
@@ -12,9 +13,6 @@ use tmui::{
     tlib::object::{ObjectImpl, ObjectSubclass},
     widget::{callbacks::CallbacksRegister, WidgetImpl},
 };
-
-use super::dropdown_list::SessionDropdownList;
-
 #[extends(Widget, Layout(HBox))]
 #[derive(Childrenable)]
 #[popupable]
@@ -48,14 +46,14 @@ impl ObjectImpl for NewTabButton {
     fn construct(&mut self) {
         self.parent_construct();
 
-        let dropdown_list = SessionDropdownList::new_alloc();
+        let dropdown_list = CorrSessionDropdownList::new();
         connect!(
             dropdown_list,
             visibility_changed(),
             self,
             dropdown_list_visibility_changed(bool)
         );
-        self.add_popup(dropdown_list.to_dyn_popup_tr());
+        self.add_popup(dropdown_list.into());
     }
 
     fn initialize(&mut self) {
@@ -251,7 +249,7 @@ impl EventHandle for NewTabButton {
     }
 
     #[allow(clippy::single_match)]
-    fn handle(&mut self, evt: &Self::Event) {
+    fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
             Events::ThemeChanged => {
                 self.set_background(TermdotConfig::background());

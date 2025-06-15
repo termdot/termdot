@@ -112,7 +112,7 @@ impl ObjectImpl for SessionTab {
         self.close_icon.set_margin_top(1);
         self.close_icon.set_margin_right(1);
 
-        let close_icon_size = self.close_icon.rect().size();
+        let close_icon_size = self.close_icon.get_view_size();
         self.session_label
             .set_size_hint(SizeHint::new().with_max_width(
                 size.width() - icon_size.width() - close_icon_size.width() - margin * 2,
@@ -135,10 +135,12 @@ impl WidgetImpl for SessionTab {
         }
     }
 
+    #[inline]
     fn on_mouse_enter(&mut self, _: &MouseEvent) {
         self.close_icon.show();
     }
 
+    #[inline]
     fn on_mouse_leave(&mut self, _: &MouseEvent) {
         self.close_icon.hide();
     }
@@ -267,7 +269,7 @@ impl EventHandle for SessionTab {
     }
 
     #[inline]
-    fn handle(&mut self, evt: &Events) {
+    fn handle_evt(&mut self, evt: &Events) {
         match evt {
             Events::ThemeChanged => {
                 self.set_border_color(TermdotConfig::active_session());

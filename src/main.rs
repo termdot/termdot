@@ -35,6 +35,8 @@ fn main() {
     let icon = Asset::get("icons/icon.png").unwrap();
     let icon = unsafe { Icon::from_bytes(&icon.data) };
 
+    load_fonts();
+
     let app = Application::builder()
         .width(1020)
         .height(600)
@@ -52,8 +54,6 @@ fn main() {
 }
 
 fn build_ui(window: &mut ApplicationWindow) {
-    load_fonts();
-
     window.set_background(TermdotConfig::background());
 
     window.set_border_radius(8.);

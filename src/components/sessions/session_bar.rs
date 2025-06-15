@@ -71,7 +71,7 @@ impl EventHandle for SessionBar {
 
     #[allow(clippy::single_match)]
     #[inline]
-    fn handle(&mut self, evt: &Self::Event) {
+    fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
             Events::CreateSession(session) => {
                 let win = self.window();
@@ -118,7 +118,7 @@ impl EventHandle for SessionBar {
 
                     self.add_child(session_tab);
 
-                    self.on_session_count_changed();
+                    self.calc_session_tab();
                 }
             }
 
@@ -182,6 +182,24 @@ impl SessionBar {
         }
     }
 
+    pub fn calc_session_tab(&mut self) {
+        let count = self.children().len() as i32;
+        if count == 0 {
+            return;
+        }
+
+        let parent = self
+            .get_parent_ref()
+            .expect("[SessionBar::on_session_count_changed] get parent is None.")
+            .downcast_ref::<TitleBar>()
+            .expect("[SessionBar::on_session_count_changed] Cast to `TitleBar` failed.");
+        let theo_width = parent.get_title_bar_theoretical_width();
+        let width = (theo_width / count).clamp(MIN_WIDTH, MAX_WIDTH);
+
+        let mut children = self.children_mut();
+        Widget::resize_batch(children[0].to_tr(), &mut children, Some(width), None);
+    }
+
     fn on_session_panel_finished(&mut self, panel_id: ObjectId) {
         for child in self.children() {
             let session_tab = child.downcast_ref::<SessionTab>().unwrap();
@@ -196,22 +214,7 @@ impl SessionBar {
         self.remove_children(session_tab_id);
         self.removed_session_panel = Some(session_panel_id);
 
-        self.on_session_count_changed();
-    }
-
-    fn on_session_count_changed(&mut self) {
-        let parent = self
-            .get_parent_ref()
-            .expect("[SessionBar::on_session_count_changed] get parent is None.")
-            .downcast_ref::<TitleBar>()
-            .expect("[SessionBar::on_session_count_changed] Cast to `TitleBar` failed.");
-        let theo_width = parent.get_title_bar_theoretical_width();
-        let count = self.children().len() as i32;
-        let width = (theo_width / count).clamp(MIN_WIDTH, MAX_WIDTH);
-
-        for c in self.children_mut() {
-            c.resize(Some(width), None);
-        }
+        self.calc_session_tab();
     }
 }
 

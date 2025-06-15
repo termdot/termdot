@@ -292,7 +292,7 @@ impl EventHandle for App {
     }
 
     #[inline]
-    fn handle(&mut self, evt: &Self::Event) {
+    fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
             Events::HeartBeatUndetected => {
                 // Do nothing temporary
