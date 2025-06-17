@@ -1,13 +1,17 @@
+use std::time::Instant;
+
 use super::title_bar::TitleBar;
 use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
     session::Session,
+    terminal_id,
 };
-use ipc::ipc_context::IpcContext;
+use common::constants::REGISTER_HEAT_BEAT_DURATION;
+use ipc::{ipc_context::IpcContext, register_info::RegisterInfo};
 use termio::{cli::constant::ProtocolType, emulator::core::terminal_emulator::TerminalEmulator};
 use tlib::{
-    event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after,
+    close_handler, event_bus::event_handle::EventHandle, global_watch, iter_executor, run_after,
     utils::SnowflakeGuidGenerator,
 };
 use tmui::{
@@ -21,6 +25,7 @@ use tmui::{
 #[iter_executor]
 #[global_watch(MouseMove, MousePressed, MouseReleased)]
 #[run_after]
+#[close_handler]
 pub struct App {
     #[children]
     title_bar: Tr<TitleBar>,
@@ -33,6 +38,8 @@ pub struct App {
     resize_zone: bool,
     resize_pressed: bool,
     resize_direction: ResizeDirection,
+
+    instant: Option<Instant>,
 }
 
 impl ObjectSubclass for App {
@@ -48,10 +55,19 @@ impl ObjectImpl for App {
 
         self.set_vexpand(true);
         self.set_hexpand(true);
+
+        self.ipc_context
+            .regsiter_terminal(RegisterInfo::new(terminal_id()));
     }
 
     fn on_drop(&mut self) {
         EventBus::remove(self);
+    }
+}
+
+impl CloseHandler for App {
+    fn handle(&mut self) {
+        self.ipc_context.remove_terminal(terminal_id());
     }
 }
 
@@ -284,7 +300,6 @@ impl EventHandle for App {
     #[inline]
     fn listen(&self) -> Vec<Self::EventType> {
         vec![
-            EventType::HeartBeatUndetected,
             EventType::ThemeChanged,
             EventType::FontChanged,
             EventType::SessionDropdownListHide,
@@ -294,9 +309,6 @@ impl EventHandle for App {
     #[inline]
     fn handle_evt(&mut self, evt: &Self::Event) {
         match evt {
-            Events::HeartBeatUndetected => {
-                // Do nothing temporary
-            }
             Events::ThemeChanged => {
                 self.on_theme_changed();
             }
@@ -343,6 +355,18 @@ impl IterExecutor for App {
         }
 
         EventBus::process();
+
+        if let Some(instant) = self.instant.as_ref() {
+            if instant.elapsed().as_millis() >= REGISTER_HEAT_BEAT_DURATION {
+                self.instant = Some(Instant::now());
+                self.ipc_context.heart_beat_terminal(terminal_id());
+                self.ipc_context.check_register_validation();
+            }
+        } else {
+            self.instant = Some(Instant::now());
+            self.ipc_context.heart_beat_terminal(terminal_id());
+            self.ipc_context.check_register_validation();
+        }
     }
 }
 

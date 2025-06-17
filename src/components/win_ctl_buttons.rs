@@ -16,6 +16,13 @@ use tmui::{
 #[derive(Childrenable)]
 pub struct WinControlButtons {
     #[derivative(Default(value = "{
+        let file = Asset::get(\"icons/pinned.svg\").unwrap();
+        SvgIcon::from_bytes(file.data.as_ref())
+    }"))]
+    #[children]
+    pinned: Tr<SvgIcon>,
+
+    #[derivative(Default(value = "{
         let file = Asset::get(\"icons/minimize.svg\").unwrap();
         SvgIcon::from_bytes(file.data.as_ref())
     }"))]
@@ -48,9 +55,18 @@ impl ObjectImpl for WinControlButtons {
 
         self.set_halign(Align::End);
         self.set_vexpand(true);
-        self.width_request(135);
+        let width = 45 * 4;
+        self.width_request(width);
+        self.set_size_hint(SizeHint::new().with_max_width(width).with_min_width(width));
 
         let background = self.background();
+
+        self.pinned.width_request(45);
+        self.pinned.height_request(TITLE_BAR_HEIGHT - 1);
+        self.pinned
+            .register_mouse_enter(|w| w.set_background(TermdotConfig::hover()));
+        self.pinned
+            .register_mouse_leave(move |w| w.set_background(background));
 
         self.minimize.width_request(45);
         self.minimize.height_request(TITLE_BAR_HEIGHT - 1);

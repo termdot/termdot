@@ -11,5 +11,6 @@ x11 = ["tmui/x11"]
 tmui = { git = "https://github.com/toocol/tmui" }
 termio = { workspace = true }
 godot = { workspace = true }
+common = { workspace = true }
 
 log = { workspace = true }

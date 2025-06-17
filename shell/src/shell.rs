@@ -144,7 +144,7 @@ impl Shell {
     }
 
     #[inline]
-    pub fn set_prompt(&mut self, host_name: &GString) {
+    pub fn set_prompt(&mut self, host_name: &str) {
         self.prompt = format!("{}> \u{200B}", host_name);
     }
 

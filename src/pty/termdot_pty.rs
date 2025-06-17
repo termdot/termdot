@@ -187,9 +187,9 @@ impl Pty for TermdotPty {
 
     #[inline]
     fn emit_finished(&mut self) {
-        EventBus::push(Events::HeartBeatUndetected);
         emit!(self, finished(self.id, ExitStatus::NormalExit));
         self.closed = false;
+        self.send_ipc_data(IpcEvent::Exit);
     }
 }
 

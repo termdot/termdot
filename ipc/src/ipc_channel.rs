@@ -38,12 +38,12 @@ impl IpcChannel {
                         .build_type(BuildType::Open)
                         .os_id(sn)
                         .build()
-                        .inspect_err(|e| error!("[IpcContext::shell] Shell `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                        .inspect_err(|e| error!("[IpcChannel::shell] Shell `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                         .ok()?
                 }
                 _ => {
                     godot_error!(
-                        "[IpcContext::shell] Shell `MemQueue` create error, create `IpcContext` failed, e = {:?}",
+                        "[IpcChannel::shell] Shell `MemQueue` create error, create `IpcContext` failed, e = {:?}",
                         e
                     );
                     return None;
@@ -68,12 +68,12 @@ impl IpcChannel {
                         .build_type(BuildType::Open)
                         .os_id(tn)
                         .build()
-                        .inspect_err(|e| error!("[IpcContext::shell] Terminal `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                        .inspect_err(|e| error!("[IpcChannel::shell] Terminal `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                         .ok()?
                 }
                 _ => {
                     godot_error!(
-                        "[IpcContext::shell] Terminal `MemQueue` create error, create `IpcContext` failed, e = {:?}",
+                        "[IpcChannel::shell] Terminal `MemQueue` create error, create `IpcContext` failed, e = {:?}",
                         e
                     );
                     return None;
@@ -102,13 +102,13 @@ impl IpcChannel {
                 .build_type(BuildType::Open)
                 .os_id(sn)
                 .build()
-                .inspect_err(|e| error!("[IpcContext::terminal] Shell `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                .inspect_err(|e| error!("[IpcChannel::terminal] Shell `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                 .ok()?,
             terminal_queue: MemQueueBuilder::new()
                 .build_type(BuildType::Open)
                 .os_id(tn)
                 .build()
-                .inspect_err(|e| error!("[IpcContext::terminal] Terminal `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                .inspect_err(|e| error!("[IpcChannel::terminal] Terminal `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                 .ok()?,
         })
     }

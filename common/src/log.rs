@@ -60,3 +60,33 @@ impl LocalLog {
         }
     }
 }
+
+#[macro_export]
+macro_rules! gb_info {
+    ($($arg:tt)*) => {{
+        let mut log = format!($($arg)*);
+        log.insert_str(0, "[INFO] ");
+        log.push_str("\r\n");
+        common::log::LocalLog::append(log);
+    }}
+}
+
+#[macro_export]
+macro_rules! gb_warn {
+    ($($arg:tt)*) => {{
+        let mut log = format!($($arg)*);
+        log.insert_str(0, "[WARN] ");
+        log.push_str("\r\n");
+        common::log::LocalLog::append(log);
+    }}
+}
+
+#[macro_export]
+macro_rules! gb_error {
+    ($($arg:tt)*) => {{
+        let mut log = format!($($arg)*);
+        log.insert_str(0, "[ERROR] ");
+        log.push_str("\r\n");
+        common::log::LocalLog::append(log);
+    }}
+}

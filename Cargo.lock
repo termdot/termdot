@@ -131,7 +131,7 @@ checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 [[package]]
 name = "asset"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "rust-embed",
 ]
@@ -547,7 +547,7 @@ dependencies = [
 [[package]]
 name = "cli"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "ahash 0.8.12",
  "getset",
@@ -890,7 +890,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 [[package]]
 name = "emulator"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "bitvec",
  "cli",
@@ -1644,6 +1644,7 @@ dependencies = [
 name = "ipc"
 version = "0.0.4"
 dependencies = [
+ "common",
  "godot",
  "log",
  "termio",
@@ -1804,7 +1805,7 @@ dependencies = [
 [[package]]
 name = "libs"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "asset",
  "chrono",
@@ -2318,7 +2319,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "platform"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "asset",
  "cli",
@@ -2488,9 +2489,9 @@ dependencies = [
 
 [[package]]
 name = "r-efi"
-version = "5.2.0"
+version = "5.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74765f6d916ee2faa39bc8e68e4f3ed8949b48cccdac59983d287a7cb71ce9c5"
+checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "radium"
@@ -2810,9 +2811,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.27"
+version = "0.23.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "730944ca083c1c233a75c09f199e973ca499344a2b7ba9e755c457e86fb4a321"
+checksum = "7160e3e10bf4535308537f3c4e1641468cd0e485175d6163087c0393c7d46643"
 dependencies = [
  "log",
  "once_cell",
@@ -3076,12 +3077,9 @@ dependencies = [
 
 [[package]]
 name = "slab"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
-dependencies = [
- "autocfg",
-]
+checksum = "04dc19736151f35336d325007ac991178d504a119863a2fcb3758cdb5e52c50d"
 
 [[package]]
 name = "slotmap"
@@ -3310,7 +3308,7 @@ dependencies = [
 [[package]]
 name = "termio"
 version = "0.1.0"
-source = "git+https://github.com/toocol/termio#736ae9e0b2acdfaf6532b6ee4675b1aa5bbd810a"
+source = "git+https://github.com/toocol/termio#1ef72720f72552216ff673ee206e26d9f270ab75"
 dependencies = [
  "cli",
  "emulator",

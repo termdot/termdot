@@ -23,6 +23,7 @@ use super::{session_tab::SessionTab, MAX_WIDTH, MIN_WIDTH};
 pub struct SessionBar {
     active_session_panel_id: Option<ObjectId>,
     removed_session_panel: Option<ObjectId>,
+    tab_width: i32,
 }
 
 impl ObjectSubclass for SessionBar {
@@ -195,6 +196,11 @@ impl SessionBar {
             .expect("[SessionBar::on_session_count_changed] Cast to `TitleBar` failed.");
         let theo_width = parent.get_title_bar_theoretical_width();
         let width = (theo_width / count).clamp(MIN_WIDTH, MAX_WIDTH);
+
+        if self.tab_width == width {
+            return;
+        }
+        self.tab_width = width;
 
         let mut children = self.children_mut();
         Widget::resize_batch(children[0].to_tr(), &mut children, Some(width), None);

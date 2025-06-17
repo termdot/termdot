@@ -63,6 +63,9 @@ impl ObjectImpl for NewTabButton {
         self.set_margin_left(5);
         self.set_border_radius(6.);
         self.enable_bubble(EventBubble::MOUSE_MOVE);
+        let width = 30 * 2;
+        self.width_request(width);
+        self.set_size_hint(SizeHint::new().with_max_width(width).with_min_width(width));
 
         // Handle add_tab icon:
         self.add_tab.set_borders(0., 1., 0., 0.);

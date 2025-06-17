@@ -111,8 +111,8 @@ impl TitleBar {
     #[inline]
     pub fn get_title_bar_theoretical_width(&self) -> i32 {
         self.size().width()
-            - self.new_tab_button.rect().size().width()
-            - self.win_control_buttons.rect().size().width()
+            - self.new_tab_button.get_width_request()
+            - self.win_control_buttons.get_width_request()
             // Session bar margin left
             - 20
             // New tab button margin left

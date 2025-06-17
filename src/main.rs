@@ -6,17 +6,22 @@ pub mod events;
 pub mod pty;
 pub mod session;
 
+use std::sync::atomic::{AtomicU64, Ordering};
+
 use assets::Asset;
+use common::typedef::RegisterInfoId;
 use components::app::App;
 use config::{font_helper::load_fonts, TermdotConfig};
 use termio::cli::scheme::color_scheme_mgr::ColorSchemeMgr;
-use tlib::log::error;
+use tlib::{log::error, utils::SnowflakeGuidGenerator};
 use tmui::{
     application::Application, application_window::ApplicationWindow, graphics::icon::Icon,
     prelude::*,
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+static TERMINAL_ID: AtomicU64 = AtomicU64::new(0);
 
 #[inline]
 pub fn terminal_version() -> &'static str {
@@ -36,6 +41,7 @@ fn main() {
     let icon = unsafe { Icon::from_bytes(&icon.data) };
 
     load_fonts();
+    set_terminal_id();
 
     let app = Application::builder()
         .width(1020)
@@ -81,4 +87,16 @@ fn set_panic_hook() {
         error!("{}", panic);
         common::log::LocalLog::append(panic);
     }));
+}
+
+#[inline]
+fn set_terminal_id() {
+    let id =
+        SnowflakeGuidGenerator::next_id().expect("[Main::set_terminal_id] Generate guid failed.");
+    TERMINAL_ID.store(id, Ordering::Release);
+}
+
+#[inline]
+pub fn terminal_id() -> RegisterInfoId {
+    TERMINAL_ID.load(Ordering::Relaxed)
 }
