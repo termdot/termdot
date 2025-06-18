@@ -1194,9 +1194,9 @@ dependencies = [
 
 [[package]]
 name = "getset"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3586f256131df87204eb733da72e3d3eb4f343c639f4b7be279ac7c48baeafe"
+checksum = "9cf0fc11e47561d47397154977bc219f4cf809b2974facc3ccb3b89e2436f912"
 dependencies = [
  "proc-macro-error2",
  "proc-macro2",
@@ -1777,9 +1777,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.173"
+version = "0.2.174"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8cfeafaffdbc32176b64fb251369d52ea9f0a8fbc6f8759edffef7b525d64bb"
+checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libloading"
@@ -1919,7 +1919,7 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#5cffd7b7ef2808e271268f8de8f675fc61924d5c"
+source = "git+https://github.com/toocol/tmui#e31982c6deded895152570fb7f5e177d3385b747"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3413,7 +3413,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "tipc"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#5cffd7b7ef2808e271268f8de8f675fc61924d5c"
+source = "git+https://github.com/toocol/tmui#e31982c6deded895152570fb7f5e177d3385b747"
 dependencies = [
  "lazy_static",
  "log",
@@ -3431,7 +3431,7 @@ dependencies = [
 [[package]]
 name = "tlib"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#5cffd7b7ef2808e271268f8de8f675fc61924d5c"
+source = "git+https://github.com/toocol/tmui#e31982c6deded895152570fb7f5e177d3385b747"
 dependencies = [
  "ahash 0.8.12",
  "bitflags 2.9.1",
@@ -3459,7 +3459,7 @@ dependencies = [
 [[package]]
 name = "tmui"
 version = "0.1.0"
-source = "git+https://github.com/toocol/tmui#5cffd7b7ef2808e271268f8de8f675fc61924d5c"
+source = "git+https://github.com/toocol/tmui#e31982c6deded895152570fb7f5e177d3385b747"
 dependencies = [
  "ahash 0.8.12",
  "beep",

@@ -4,7 +4,7 @@ use crate::{
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
 };
-use tlib::event_bus::event_handle::EventHandle;
+use tlib::{event_bus::event_handle::EventHandle, winit::window::WindowLevel};
 use tmui::{
     icons::{svg_icon::SvgIcon, svg_toggle_icon::SvgToggleIcon},
     prelude::*,
@@ -65,8 +65,34 @@ impl ObjectImpl for WinControlButtons {
         self.pinned.height_request(TITLE_BAR_HEIGHT - 1);
         self.pinned
             .register_mouse_enter(|w| w.set_background(TermdotConfig::hover()));
-        self.pinned
-            .register_mouse_leave(move |w| w.set_background(background));
+        self.pinned.register_mouse_leave(move |w| {
+            let pinned = w
+                .get_property("pinned")
+                .map(|val| val.get::<bool>())
+                .unwrap_or_default();
+            if !pinned {
+                w.set_background(background)
+            }
+        });
+        self.pinned.register_mouse_released(|w, event| {
+            let pos = w.map_to_global(&event.position().into());
+            if !w.rect().contains(&pos) {
+                return;
+            }
+
+            let pinned = w
+                .get_property("pinned")
+                .map(|val| val.get::<bool>())
+                .unwrap_or_default();
+
+            if pinned {
+                ApplicationWindow::window().set_window_level(WindowLevel::Normal);
+            } else {
+                ApplicationWindow::window().set_window_level(WindowLevel::AlwaysOnTop);
+            }
+
+            w.set_property("pinned", (!pinned).to_value());
+        });
 
         self.minimize.width_request(45);
         self.minimize.height_request(TITLE_BAR_HEIGHT - 1);
@@ -74,8 +100,13 @@ impl ObjectImpl for WinControlButtons {
             .register_mouse_enter(|w| w.set_background(TermdotConfig::hover()));
         self.minimize
             .register_mouse_leave(move |w| w.set_background(background));
-        self.minimize
-            .register_mouse_released(|w, _| w.window().minimize());
+        self.minimize.register_mouse_released(|w, event| {
+            let pos = w.map_to_global(&event.position().into());
+            if !w.rect().contains(&pos) {
+                return;
+            }
+            w.window().minimize()
+        });
 
         self.maximize_restore.width_request(45);
         self.maximize_restore.height_request(TITLE_BAR_HEIGHT - 1);
@@ -83,7 +114,12 @@ impl ObjectImpl for WinControlButtons {
             .register_mouse_enter(|w| w.set_background(TermdotConfig::hover()));
         self.maximize_restore
             .register_mouse_leave(move |w| w.set_background(background));
-        self.maximize_restore.register_mouse_released(|w, _| {
+        self.maximize_restore.register_mouse_released(|w, event| {
+            let pos = w.map_to_global(&event.position().into());
+            if !w.rect().contains(&pos) {
+                return;
+            }
+
             let icon = w.downcast_mut::<SvgToggleIcon>().unwrap();
             match icon.current_icon() {
                 0 => icon.window().maximize(),
@@ -108,8 +144,13 @@ impl ObjectImpl for WinControlButtons {
             .register_mouse_enter(|w| w.set_background(TermdotConfig::error()));
         self.close
             .register_mouse_leave(move |w| w.set_background(background));
-        self.close
-            .register_mouse_released(|w, _| w.window().close());
+        self.close.register_mouse_released(|w, event| {
+            let pos = w.map_to_global(&event.position().into());
+            if !w.rect().contains(&pos) {
+                return;
+            }
+            w.window().close();
+        });
     }
 
     fn on_drop(&mut self) {
