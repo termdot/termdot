@@ -101,18 +101,6 @@ Main Godot node for plugin status management, and interactive with users.
   - **Default Value**: `"termdot"`
   - **Usage**: Customize the name that appears in the terminal prompt to suit your project or plugin’s theme.
 
-- **`auto_run` (`bool`)**:
-
-  - **Description**: Determines whether the external terminal will automatically run as soon as the plugin is ready.
-  - **Default Value**: `true`
-  - **Usage**: Toggle this setting if you want to control whether the terminal starts automatically or needs to be triggered manually.
-
-- **`run_action` (`String`)**:
-
-  - **Description**: Defines the action that triggers the external terminal to run. If the terminal is not already running, it will launch when this action is detected.
-  - **Default Value**: `"termdot_run"`
-  - **Usage**: Set a custom action (e.g., a specific key press or event) that launches the terminal.
-
 - **`command_ticks_per_second` (`int`)**:
 
   - **Description**: Controls the frequency at which commands are executed, measured in ticks per second.

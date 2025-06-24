@@ -23,7 +23,7 @@ pub struct TermdotPty {
     running: bool,
     closed: bool,
     timeout: u32,
-    ipc_context: Option<IpcChannel>,
+    ipc_channel: Option<IpcChannel>,
     last_heart_beat: Option<Instant>,
 }
 
@@ -40,7 +40,7 @@ impl Pty for TermdotPty {
         self.running = true;
         self.closed = false;
 
-        self.ipc_context = IpcChannel::terminal(id);
+        self.ipc_channel = IpcChannel::terminal(id);
 
         self.running
     }
@@ -119,7 +119,7 @@ impl Pty for TermdotPty {
             return vec![];
         }
 
-        let ctx = match self.ipc_context.as_ref() {
+        let ctx = match self.ipc_channel.as_ref() {
             Some(ctx) => ctx,
             None => return vec![],
         };
@@ -146,7 +146,7 @@ impl Pty for TermdotPty {
                 IpcEvent::Exit => {
                     self.running = false;
                     self.closed = true;
-                    self.ipc_context = None;
+                    self.ipc_channel = None;
                 }
                 IpcEvent::SetTerminalSize(_, _) => {}
                 IpcEvent::SendData(data, len) => {
@@ -189,14 +189,13 @@ impl Pty for TermdotPty {
     fn emit_finished(&mut self) {
         emit!(self, finished(self.id, ExitStatus::NormalExit));
         self.closed = false;
-        self.send_ipc_data(IpcEvent::Exit);
     }
 }
 
 impl TermdotPty {
     #[inline]
     pub fn send_ipc_data(&self, evt: IpcEvent) {
-        if let Some(ctx) = self.ipc_context.as_ref() {
+        if let Some(ctx) = self.ipc_channel.as_ref() {
             if let Err(e) = ctx.try_send(evt) {
                 error!("IPC send data failed, err = {:?}", e)
             }

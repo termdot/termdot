@@ -10,16 +10,15 @@
 
 </div>
 
-**_Terminal built for Godot._**
+**_Terminal built for Godot, Improve your workflow throughout the whole game development cycle._**
 
 ## Features
 
-- **Runtime command execution console** – interact with the game during runtime.
-- **Command history caching and auto-completion** – recall and auto-fill previous inputs.
-- **Command scripting with execution status handling** – write reusable scripts and track results.
-- **Extensible and easily integrated** – fits smoothly into existing projects.
+- **Local shell support** – interact with Cmd, PowerShell etc.
+- **Game runtime command execution console** – Behavior your own command and interact with the game during runtime.
 - **Log and data inspection windows** – view logs and runtime data visually.
 - **Capture Godot's standard output and errors with timestamps automatically** - inspect error data on release export.
+- **Extensible and easily integrated** – fits smoothly into existing projects.
 
 <!-- ![Termdot Display](src/resources/termdot_display.gif) -->
 
@@ -101,18 +100,6 @@ Main Godot node for plugin status management, and interactive with users.
   - **Description**: The host name displayed in the terminal prompt. It appears in the format `host_name> `, allowing users to customize the terminal's identity.
   - **Default Value**: `"termdot"`
   - **Usage**: Customize the name that appears in the terminal prompt to suit your project or plugin’s theme.
-
-- **`auto_run` (`bool`)**:
-
-  - **Description**: Determines whether the external terminal will automatically run as soon as the plugin is ready.
-  - **Default Value**: `true`
-  - **Usage**: Toggle this setting if you want to control whether the terminal starts automatically or needs to be triggered manually.
-
-- **`run_action` (`String`)**:
-
-  - **Description**: Defines the action that triggers the external terminal to run. If the terminal is not already running, it will launch when this action is detected.
-  - **Default Value**: `"termdot_run"`
-  - **Usage**: Set a custom action (e.g., a specific key press or event) that launches the terminal.
 
 - **`command_ticks_per_second` (`int`)**:
 

@@ -102,7 +102,7 @@ impl IpcChannel {
                 .build_type(BuildType::Open)
                 .os_id(sn)
                 .build()
-                .inspect_err(|e| error!("[IpcChannel::terminal] Shell `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
+                .inspect_err(|e| error!("[IpcChannel::terminal] Terminal `MemQueue` open error, create `IpcContext` failed, e = {:?}", e))
                 .ok()?,
             terminal_queue: MemQueueBuilder::new()
                 .build_type(BuildType::Open)

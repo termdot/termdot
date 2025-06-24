@@ -5,8 +5,12 @@ use crate::{
     components::sessions::dropdown_list::CorrSessionDropdownList,
     config::TermdotConfig,
     events::{EventBus, EventType, Events},
+    session::Session,
 };
-use tlib::{event_bus::event_handle::EventHandle, namespace::MouseButton};
+use termio::cli::constant::ProtocolType;
+use tlib::{
+    event_bus::event_handle::EventHandle, namespace::MouseButton, utils::SnowflakeGuidGenerator,
+};
 use tmui::{
     icons::svg_icon::SvgIcon,
     prelude::*,
@@ -186,6 +190,13 @@ impl NewTabButton {
             self.set_background(TermdotConfig::pre_hover());
             self.add_tab.set_background(TermdotConfig::hover());
             self.drop_down.set_background(Color::TRANSPARENT);
+
+            // TODO: Change protocol type to setting.
+            let session = Session::new(
+                SnowflakeGuidGenerator::next_id().unwrap(),
+                ProtocolType::PowerShell,
+            );
+            EventBus::push(Events::CreateSession(session));
         }
     }
 
